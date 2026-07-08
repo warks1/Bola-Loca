@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#080816" />
+  <title>Bola Loca - Playable Web Alpha</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" aria-label="Bola Loca"></canvas>
+
+    <section id="menu" class="screen visible">
+      <div class="card">
+        <div class="logoOrb"></div>
+        <h1>Bola Loca</h1>
+        <p>Arrastra la bola, esquiva obstáculos, recoge bonus y supera tu récord.</p>
+        <button id="playBtn">Jugar</button>
+        <button id="skinsBtn" class="secondary">Skins</button>
+        <button id="resetBtn" class="ghost">Reiniciar progreso</button>
+        <div class="statsLine">
+          <span>Récord: <strong id="bestMenu">0</strong></span>
+          <span>Monedas: <strong id="coinsMenu">0</strong></span>
+          <span>Nivel: <strong id="levelMenu">1</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="skins" class="screen">
+      <div class="card wide">
+        <h2>Skins</h2>
+        <div id="skinGrid" class="skinGrid"></div>
+        <button id="backFromSkins" class="secondary">Volver</button>
+      </div>
+    </section>
+
+    <section id="gameover" class="screen">
+      <div class="card">
+        <h2>Partida terminada</h2>
+        <div class="resultGrid">
+          <span>Puntos</span><strong id="finalScore">0</strong>
+          <span>Récord</span><strong id="bestScore">0</strong>
+          <span>Esquivados</span><strong id="finalDodged">0</strong>
+          <span>Monedas</span><strong id="finalCoins">0</strong>
+          <span>XP</span><strong id="finalXp">0</strong>
+        </div>
+        <button id="retryBtn">Reintentar</button>
+        <button id="homeBtn" class="secondary">Menú</button>
+      </div>
+    </section>
+
+    <div id="hud" class="hud hidden">
+      <div><small>Puntos</small><strong id="scoreHud">0</strong></div>
+      <div><small>x</small><strong id="multHud">1</strong></div>
+      <div><small>IA</small><strong id="aiHud">1</strong></div>
+      <div><small>Récord</small><strong id="bestHud">0</strong></div>
+    </div>
+
+    <button id="pauseBtn" class="pause hidden" aria-label="Pausar">Ⅱ</button>
+    <div id="toast" class="toast"></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
