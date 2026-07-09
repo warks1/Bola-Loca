@@ -1,38 +1,157 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Bola Loca Demo</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#111827; font-family:Arial,sans-serif; touch-action:none; }
-  canvas { display:block; background:linear-gradient(#1f2937,#030712); }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <title>Bola Loca - Demo Jugable</title>
+  <style>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0f172a;color:white;font-family:Arial,Helvetica,sans-serif;touch-action:none;overscroll-behavior:none}
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#111827,#020617)}
+    canvas{width:100vw;height:100vh;display:block;touch-action:none;background:radial-gradient(circle at top,#1e293b,#020617 70%)}
+    #ui{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;padding:24px;text-align:center}
+    .panel{pointer-events:auto;max-width:420px;width:100%;padding:26px;border:1px solid rgba(255,255,255,.18);border-radius:26px;background:rgba(15,23,42,.82);box-shadow:0 20px 70px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+    h1{margin:0 0 10px;font-size:42px;letter-spacing:1px;color:#22d3ee}
+    p{margin:8px 0;color:#dbeafe;line-height:1.35;font-size:17px}
+    button{margin-top:18px;width:100%;border:0;border-radius:18px;padding:18px 22px;background:#22d3ee;color:#06202a;font-weight:900;font-size:22px;cursor:pointer;box-shadow:0 10px 30px rgba(34,211,238,.25)}
+    .small{font-size:14px;color:#94a3b8;margin-top:12px}
+    #hud{position:fixed;left:14px;right:14px;top:calc(12px + env(safe-area-inset-top));display:flex;justify-content:space-between;gap:12px;pointer-events:none;font-weight:800;text-shadow:0 2px 8px #000;font-size:18px}
+  </style>
 </head>
 <body>
-<canvas id="game"></canvas>
+<div id="wrap"><canvas id="game"></canvas></div>
+<div id="hud"><div id="score">Puntos: 0</div><div id="best">Récord: 0</div></div>
+<div id="ui">
+  <div class="panel" id="panel">
+    <h1>BOLA LOCA</h1>
+    <p>Evita que la bola caiga.</p>
+    <p>Mueve la barra arrastrando el dedo por la pantalla.</p>
+    <button id="startBtn" type="button">JUGAR</button>
+    <div class="small">Funciona en iPhone, Android y ordenador.</div>
+  </div>
+</div>
 <script>
-const canvas=document.getElementById('game');
-const ctx=canvas.getContext('2d');
-let W,H;
-function resize(){W=window.innerWidth;H=window.innerHeight;canvas.width=W;canvas.height=H;player.y=H-80;player.w=Math.min(140,W*0.32);}
-window.addEventListener('resize',resize);
-let state='start';
-let score=0;
-let best=Number(localStorage.getItem('bolaLocaBest')||0);
-const player={x:200,y:500,w:120,h:18};
-const ball={x:200,y:300,r:18,vx:4,vy:-5};
-resize();
-function resetGame(){score=0;player.x=W/2;player.y=H-80;player.w=Math.min(140,W*0.32);player.h=18;ball.x=W/2;ball.y=H/2;ball.r=18;ball.vx=Math.random()>0.5?4:-4;ball.vy=-5;state='playing';}
-function movePlayer(clientX){player.x=clientX;if(player.x-player.w/2<0)player.x=player.w/2;if(player.x+player.w/2>W)player.x=W-player.w/2;}
-canvas.addEventListener('touchstart',e=>{e.preventDefault();if(state==='start'||state==='gameover'){resetGame();return;}movePlayer(e.touches[0].clientX);},{passive:false});
-canvas.addEventListener('touchmove',e=>{e.preventDefault();if(state==='playing')movePlayer(e.touches[0].clientX);},{passive:false});
-canvas.addEventListener('mousedown',e=>{if(state==='start'||state==='gameover'){resetGame();return;}movePlayer(e.clientX);});
-canvas.addEventListener('mousemove',e=>{if(state==='playing')movePlayer(e.clientX);});
-function update(){if(state!=='playing')return;ball.x+=ball.vx;ball.y+=ball.vy;if(ball.x-ball.r<=0){ball.x=ball.r;ball.vx*=-1;}if(ball.x+ball.r>=W){ball.x=W-ball.r;ball.vx*=-1;}if(ball.y-ball.r<=0){ball.y=ball.r;ball.vy*=-1;}const L=player.x-player.w/2,R=player.x+player.w/2,T=player.y,B=player.y+player.h;if(ball.y+ball.r>=T&&ball.y-ball.r<=B&&ball.x>=L&&ball.x<=R&&ball.vy>0){ball.y=T-ball.r;ball.vy*=-1;const hit=(ball.x-player.x)/(player.w/2);ball.vx=hit*7;score++;if(score>best){best=score;localStorage.setItem('bolaLocaBest',best);}ball.vx*=1.03;ball.vy*=1.03;}if(ball.y-ball.r>H){state='gameover';}}
-function drawText(text,size,y,color='white'){ctx.fillStyle=color;ctx.font=`bold ${size}px Arial`;ctx.textAlign='center';ctx.fillText(text,W/2,y);}
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#22d3ee';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#facc15';ctx.fillRect(player.x-player.w/2,player.y,player.w,player.h);ctx.fillStyle='white';ctx.font='20px Arial';ctx.textAlign='left';ctx.fillText('Puntos: '+score,20,35);ctx.fillText('Récord: '+best,20,65);if(state==='start'){drawText('BOLA LOCA',44,H/2-70,'#22d3ee');drawText('Toca la pantalla para empezar',22,H/2,'white');drawText('Mueve la barra con el dedo',18,H/2+40,'#d1d5db');}if(state==='gameover'){drawText('GAME OVER',42,H/2-50,'#ef4444');drawText('Puntuación: '+score,24,H/2,'white');drawText('Toca para volver a jugar',21,H/2+45,'#d1d5db');}}
-function loop(){update();draw();requestAnimationFrame(loop);}loop();
+(function(){
+  const canvas=document.getElementById('game');
+  const ctx=canvas.getContext('2d');
+  const ui=document.getElementById('ui');
+  const panel=document.getElementById('panel');
+  const startBtn=document.getElementById('startBtn');
+  const scoreEl=document.getElementById('score');
+  const bestEl=document.getElementById('best');
+
+  let dpr=1,W=0,H=0,state='menu',score=0;
+  let best=parseInt(localStorage.getItem('bola_loca_record')||'0',10);
+  let last=0;
+
+  const paddle={x:0,y:0,w:120,h:18};
+  const ball={x:0,y:0,r:16,vx:220,vy:-300};
+
+  function fit(){
+    dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2));
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr);
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    paddle.w=Math.max(90,Math.min(160,W*0.32));
+    paddle.h=18;
+    paddle.y=H-70;
+    paddle.x=Math.min(Math.max(paddle.x||W/2,paddle.w/2),W-paddle.w/2);
+  }
+
+  function reset(){
+    fit(); score=0; state='playing';
+    paddle.x=W/2; paddle.y=H-70;
+    ball.r=Math.max(13,Math.min(18,W*0.04));
+    ball.x=W/2; ball.y=H*0.45;
+    ball.vx=(Math.random()<0.5?-1:1)*Math.max(170,W*0.5);
+    ball.vy=-Math.max(260,H*0.38);
+    ui.style.display='none';
+    updateHud();
+  }
+
+  function gameOver(){
+    state='gameover';
+    if(score>best){best=score;localStorage.setItem('bola_loca_record',String(best));}
+    panel.innerHTML='<h1>GAME OVER</h1><p>Puntuación: <b>'+score+'</b></p><p>Récord: <b>'+best+'</b></p><button id="againBtn" type="button">VOLVER A JUGAR</button><div class="small">Toca el botón para reiniciar.</div>';
+    ui.style.display='flex';
+    document.getElementById('againBtn').addEventListener('click',reset,{passive:false});
+    updateHud();
+  }
+
+  function updateHud(){scoreEl.textContent='Puntos: '+score;bestEl.textContent='Récord: '+best;}
+
+  function moveTo(clientX){
+    paddle.x=clientX;
+    if(paddle.x-paddle.w/2<0)paddle.x=paddle.w/2;
+    if(paddle.x+paddle.w/2>W)paddle.x=W-paddle.w/2;
+  }
+
+  function pointer(e){
+    e.preventDefault();
+    const x=(e.touches&&e.touches[0]?e.touches[0].clientX:e.clientX);
+    if(state==='playing') moveTo(x);
+  }
+  canvas.addEventListener('touchstart',pointer,{passive:false});
+  canvas.addEventListener('touchmove',pointer,{passive:false});
+  canvas.addEventListener('mousemove',pointer,{passive:false});
+  canvas.addEventListener('mousedown',pointer,{passive:false});
+  startBtn.addEventListener('click',reset,{passive:false});
+  window.addEventListener('resize',fit);
+  window.addEventListener('orientationchange',()=>setTimeout(fit,250));
+
+  function step(t){
+    requestAnimationFrame(step);
+    const dt=Math.min(0.025,(t-last)/1000||0.016); last=t;
+    if(state==='playing') update(dt);
+    draw();
+  }
+
+  function update(dt){
+    ball.x+=ball.vx*dt; ball.y+=ball.vy*dt;
+    if(ball.x-ball.r<0){ball.x=ball.r;ball.vx=Math.abs(ball.vx)}
+    if(ball.x+ball.r>W){ball.x=W-ball.r;ball.vx=-Math.abs(ball.vx)}
+    if(ball.y-ball.r<0){ball.y=ball.r;ball.vy=Math.abs(ball.vy)}
+
+    const left=paddle.x-paddle.w/2, right=paddle.x+paddle.w/2, top=paddle.y;
+    if(ball.vy>0 && ball.y+ball.r>=top && ball.y-ball.r<=top+paddle.h && ball.x>=left && ball.x<=right){
+      ball.y=top-ball.r;
+      const hit=(ball.x-paddle.x)/(paddle.w/2);
+      ball.vx=hit*Math.max(260,W*0.65);
+      ball.vy=-Math.min(Math.abs(ball.vy)*1.045+12,760);
+      score++; if(score>best)best=score; updateHud();
+    }
+    if(ball.y-ball.r>H) gameOver();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<18;i++){
+      ctx.globalAlpha=0.08;
+      ctx.fillStyle='#38bdf8';
+      ctx.beginPath(); ctx.arc((i*97)%W,(i*151)%H,2+(i%4),0,Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#facc15';
+    roundRect(paddle.x-paddle.w/2,paddle.y,paddle.w,paddle.h,10);
+    ctx.fill();
+    ctx.shadowColor='#22d3ee'; ctx.shadowBlur=18;
+    ctx.fillStyle='#22d3ee';
+    ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    if(state==='menu'){
+      ctx.globalAlpha=.22; ctx.fillStyle='#22d3ee';
+      ctx.beginPath(); ctx.arc(W/2,H*.38,70,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+    }
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+  }
+
+  fit(); updateHud(); requestAnimationFrame(step);
+})();
 </script>
 </body>
 </html>
