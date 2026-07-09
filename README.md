@@ -1,4 +1,3 @@
-Bola Loca v0.2
-- Meteoritos reales dibujados como rocas con cola de fuego.
-- Multiplicadores aleatorios ocultos.
-- Destello de luz y partículas al recoger meteorito.
+# Bola Loca v0.3
+
+Obstáculos convertidos en objetos aleatorios: rocas, pinchos, minas, cajas, asteroides y cristales. Meteoritos de multiplicador con destello incluidos.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Bola Loca v0.2</title>
+<title>Bola Loca v0.3 Objetos Aleatorios</title>
 <style>
 html,body{margin:0;padding:0;overflow:hidden;background:#050816;font-family:Arial,Helvetica,sans-serif;touch-action:none;color:white}canvas{display:block;width:100vw;height:100vh;background:radial-gradient(circle at top,#1b2a5a 0%,#081023 45%,#02040b 100%)}
 </style>
@@ -33,7 +33,23 @@ function reset(){
 function rnd(a,b){return Math.random()*(b-a)+a}
 function dist(a,b,c,d){return Math.hypot(a-c,b-d)}
 function addParticles(x,y,color,n=24,power=4){for(let i=0;i<n;i++){particles.push({x,y,vx:rnd(-power,power),vy:rnd(-power,power),life:rnd(25,55),max:55,r:rnd(2,5),color})}}
-function spawnObstacle(){obstacles.push({x:rnd(35,W-35),y:-50,w:rnd(55,120),h:rnd(18,35),vy:rnd(2.2,4.2)+t*0.002})}
+function spawnObstacle(){
+ const types=['rock','spike','mine','crate','asteroid','crystal'];
+ const type=types[Math.floor(Math.random()*types.length)];
+ const size=rnd(28,54);
+ obstacles.push({
+  type,
+  x:rnd(45,W-45),
+  y:-60,
+  w:type==='spike'?size*1.35:size,
+  h:type==='spike'?size*1.05:size,
+  r:size/2,
+  vy:rnd(2.2,4.4)+t*0.002,
+  rot:rnd(0,Math.PI*2),
+  spin:rnd(-0.045,0.045),
+  verts:Array.from({length:9},()=>rnd(.65,1.05))
+ })
+}
 function spawnCoinItem(){coinItems.push({x:rnd(30,W-30),y:-30,r:12,vy:rnd(2.5,4.3),rot:0})}
 function randomMultiplier(){const values=[2,2,2,3,3,5,5,10];return values[Math.floor(Math.random()*values.length)]}
 function spawnMeteor(){meteors.push({x:rnd(35,W-35),y:-40,r:rnd(18,24),vy:rnd(2.4,3.8),rot:rnd(0,6.28),spin:rnd(-0.04,0.04),mul:randomMultiplier()})}
@@ -52,14 +68,56 @@ function update(){
  if(spawnObs<=0){spawnObstacle();spawnObs=Math.max(24,70-t*0.01)}
  if(spawnCoin<=0){spawnCoinItem();spawnCoin=rnd(45,90)}
  if(spawnMeteor<=0){spawnMeteor();spawnMeteor=rnd(160,260)}
- for(const o of obstacles)o.y+=o.vy;
+ for(const o of obstacles){o.y+=o.vy;o.rot+=o.spin;}
  for(const c of coinItems){c.y+=c.vy;c.rot+=0.08}
  for(const m of meteors){m.y+=m.vy;m.rot+=m.spin}
- for(let i=obstacles.length-1;i>=0;i--){const o=obstacles[i]; if(o.y>H+80)obstacles.splice(i,1); else if(player.x+player.r>o.x-o.w/2&&player.x-player.r<o.x+o.w/2&&player.y+player.r>o.y-o.h/2&&player.y-player.r<o.y+o.h/2){state='over';shake=14;addParticles(player.x,player.y,'#ff4d4d',45,7)}}
+ for(let i=obstacles.length-1;i>=0;i--){
+ const o=obstacles[i];
+ if(o.y>H+90){obstacles.splice(i,1);continue}
+ const hitRadius=o.type==='spike'?Math.max(o.w,o.h)*0.45:o.r*0.95;
+ if(dist(player.x,player.y,o.x,o.y)<player.r+hitRadius){
+  state='over';shake=14;addParticles(player.x,player.y,'#ff4d4d',45,7)
+ }
+}
  for(let i=coinItems.length-1;i>=0;i--){const c=coinItems[i]; if(c.y>H+50)coinItems.splice(i,1); else if(dist(player.x,player.y,c.x,c.y)<player.r+c.r){coins++;score+=10*multiplier;addParticles(c.x,c.y,'#ffd84a',14,3);coinItems.splice(i,1)}}
  for(let i=meteors.length-1;i>=0;i--){const m=meteors[i]; if(m.y>H+60)meteors.splice(i,1); else if(dist(player.x,player.y,m.x,m.y)<player.r+m.r){multiplier=m.mul;multiplierTimer=420;score+=25*m.mul;flash=1;shake=8;addParticles(m.x,m.y,'#9cf6ff',55,8);addParticles(m.x,m.y,'#ffffff',28,10);meteors.splice(i,1)}}
  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.03;p.life--;if(p.life<=0)particles.splice(i,1)}
  if(shake>0)shake*=0.85; if(flash>0)flash-=0.035;
+}
+
+
+function drawObstacle(o){
+ ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rot);
+ if(o.type==='rock'){
+  ctx.fillStyle='#6b7280';ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;ctx.beginPath();
+  ctx.moveTo(-o.r*.9,-o.r*.25);ctx.lineTo(-o.r*.35,-o.r*.9);ctx.lineTo(o.r*.55,-o.r*.72);ctx.lineTo(o.r*.95,-o.r*.05);ctx.lineTo(o.r*.62,o.r*.75);ctx.lineTo(-o.r*.22,o.r*.95);ctx.lineTo(-o.r*.86,o.r*.45);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.arc(-o.r*.2,-o.r*.18,4,0,Math.PI*2);ctx.arc(o.r*.35,o.r*.24,5,0,Math.PI*2);ctx.fill();
+ }
+ else if(o.type==='spike'){
+  ctx.fillStyle='#ef4444';ctx.strokeStyle='#fecaca';ctx.lineWidth=2;ctx.beginPath();
+  ctx.moveTo(0,-o.h*.62);ctx.lineTo(o.w*.52,o.h*.45);ctx.lineTo(0,o.h*.22);ctx.lineTo(-o.w*.52,o.h*.45);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.globalAlpha=.35;ctx.beginPath();ctx.moveTo(0,-o.h*.42);ctx.lineTo(o.w*.18,o.h*.18);ctx.lineTo(0,o.h*.08);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
+ }
+ else if(o.type==='mine'){
+  ctx.fillStyle='#111827';ctx.strokeStyle='#fb7185';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,o.r,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#fb7185';ctx.lineWidth=4;for(let a=0;a<Math.PI*2;a+=Math.PI/4){ctx.beginPath();ctx.moveTo(Math.cos(a)*o.r*.75,Math.sin(a)*o.r*.75);ctx.lineTo(Math.cos(a)*o.r*1.28,Math.sin(a)*o.r*1.28);ctx.stroke()}
+  ctx.fillStyle='#fb7185';ctx.beginPath();ctx.arc(0,0,o.r*.33,0,Math.PI*2);ctx.fill();
+ }
+ else if(o.type==='crate'){
+  ctx.fillStyle='#92400e';ctx.strokeStyle='#fed7aa';ctx.lineWidth=3;ctx.fillRect(-o.r,-o.r,o.r*2,o.r*2);ctx.strokeRect(-o.r,-o.r,o.r*2,o.r*2);
+  ctx.strokeStyle='#f59e0b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-o.r,-o.r);ctx.lineTo(o.r,o.r);ctx.moveTo(o.r,-o.r);ctx.lineTo(-o.r,o.r);ctx.stroke();
+ }
+ else if(o.type==='asteroid'){
+  ctx.fillStyle='#7f1d1d';ctx.strokeStyle='#fca5a5';ctx.lineWidth=2;ctx.beginPath();
+  for(let i=0;i<9;i++){let a=i*Math.PI*2/9;let rr=o.r*(o.verts?o.verts[i]:.85);let x=Math.cos(a)*rr,y=Math.sin(a)*rr;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fb923c';ctx.beginPath();ctx.arc(-o.r*.25,0,5,0,Math.PI*2);ctx.arc(o.r*.25,-o.r*.25,4,0,Math.PI*2);ctx.fill();
+ }
+ else if(o.type==='crystal'){
+  ctx.fillStyle='#a855f7';ctx.strokeStyle='#e9d5ff';ctx.lineWidth=2;ctx.beginPath();
+  ctx.moveTo(0,-o.r*1.15);ctx.lineTo(o.r*.72,-o.r*.25);ctx.lineTo(o.r*.45,o.r*.95);ctx.lineTo(-o.r*.48,o.r*.95);ctx.lineTo(-o.r*.72,-o.r*.25);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.moveTo(0,-o.r*.8);ctx.lineTo(o.r*.22,-o.r*.2);ctx.lineTo(0,o.r*.55);ctx.closePath();ctx.fill();
+ }
+ ctx.restore();
 }
 
 function drawMeteor(m){
@@ -82,7 +140,7 @@ function draw(){
  // fondo estrellas
  ctx.fillStyle='rgba(255,255,255,.45)'; for(let i=0;i<45;i++){let x=(i*73+t*.15)%W,y=(i*113)%H;ctx.fillRect(x,y,2,2)}
  // objetos
- for(const o of obstacles){ctx.fillStyle='#ef4444';ctx.fillRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h);ctx.strokeStyle='#fecaca';ctx.strokeRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h)}
+ for(const o of obstacles)drawObstacle(o);
  for(const c of coinItems){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(0,0,c.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff7aa';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#8a5a00';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$',0,1);ctx.restore()}
  for(const m of meteors)drawMeteor(m);
  // bola
