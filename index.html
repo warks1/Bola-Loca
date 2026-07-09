@@ -1,68 +1,106 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Bola Loca v0.1 Alpha</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Bola Loca v0.2</title>
 <style>
-:root{--bg1:#07111f;--bg2:#12051f;--cyan:#27e8ff;--yellow:#ffd23f;--red:#ff3b5c;--green:#52ff7a;--purple:#b45cff;--white:#fff}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-html,body{margin:0;height:100%;overflow:hidden;background:#050812;font-family:Arial,Helvetica,sans-serif;color:#fff;touch-action:none}
-#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 20%,#173a5f 0,#07111f 45%,#050812 100%)}
-canvas{width:100vw;height:100vh;display:block;background:linear-gradient(180deg,var(--bg1),var(--bg2));}
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(circle at 50% 20%,rgba(39,232,255,.22),rgba(5,8,18,.94) 55%);z-index:5}
-.hidden{display:none!important}
-h1{font-size:52px;line-height:.95;margin:0 0 12px;text-shadow:0 0 20px #27e8ff,0 6px 0 #101828;letter-spacing:1px}
-.sub{font-size:18px;color:#dbeafe;margin:0 0 22px;max-width:340px}.panel{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.35);max-width:360px;width:min(92vw,360px)}
-button{border:0;border-radius:18px;padding:16px 24px;margin:8px;width:min(78vw,280px);font-size:22px;font-weight:900;color:#07111f;background:linear-gradient(180deg,#fff580,#ffb703);box-shadow:0 9px 0 #9a5d00,0 0 28px rgba(255,210,63,.35)}
-button:active{transform:translateY(6px);box-shadow:0 3px 0 #9a5d00}.small{font-size:15px;color:#c7d2fe;margin-top:14px;line-height:1.4}.hud{position:fixed;top:env(safe-area-inset-top);left:0;right:0;display:flex;gap:8px;justify-content:space-between;padding:10px 10px 0;z-index:3;pointer-events:none}.pill{background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 10px;font-weight:900;font-size:14px;box-shadow:0 6px 16px rgba(0,0,0,.25);min-width:70px;text-align:center}.mult{color:#d8b4fe}.coin{color:#fde047}.score{color:#67e8f9}.best{color:#86efac}.pause{position:fixed;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:4;width:62px;height:54px;border-radius:18px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-weight:900;font-size:24px;display:flex;align-items:center;justify-content:center}.pause.hidden{display:none!important}
+html,body{margin:0;padding:0;overflow:hidden;background:#050816;font-family:Arial,Helvetica,sans-serif;touch-action:none;color:white}canvas{display:block;width:100vw;height:100vh;background:radial-gradient(circle at top,#1b2a5a 0%,#081023 45%,#02040b 100%)}
 </style>
 </head>
 <body>
-<div id="wrap"><canvas id="game"></canvas></div>
-<div class="hud hidden" id="hud"><div class="pill score" id="score">PTS 0</div><div class="pill mult" id="multi">x1</div><div class="pill coin" id="coins">🪙 0</div><div class="pill best" id="best">🏆 0</div></div>
-<div id="menu" class="screen"><h1>BOLA<br>LOCA</h1><div class="panel"><p class="sub">Versión v0.1 Alpha jugable</p><button id="playBtn">JUGAR</button><p class="small">Arrastra la bola con el dedo.<br>Evita bloques rojos, recoge monedas y meteoritos.</p></div></div>
-<div id="over" class="screen hidden"><h1>GAME<br>OVER</h1><div class="panel"><p class="sub" id="finalTxt">Puntuación: 0</p><button id="againBtn">REINTENTAR</button><button id="menuBtn">MENÚ</button></div></div>
-<div id="pauseBtn" class="pause hidden">Ⅱ</div>
+<canvas id="game"></canvas>
 <script>
-(()=>{
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-const menu=document.getElementById('menu'),over=document.getElementById('over'),hud=document.getElementById('hud'),pauseBtn=document.getElementById('pauseBtn');
-const scoreEl=document.getElementById('score'),multiEl=document.getElementById('multi'),coinsEl=document.getElementById('coins'),bestEl=document.getElementById('best'),finalTxt=document.getElementById('finalTxt');
-let W=0,H=0,DPR=1,state='menu',t=0,last=0,spawnO=0,spawnC=0,spawnM=0,score=0,coins=0,best=Number(localStorage.getItem('bola_loca_best')||0),mult=1,multTimer=0,shake=0,drag=false,paused=false;
-let ball,obs=[],items=[],parts=[];
-function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0); if(ball){ball.x=Math.max(ball.r,Math.min(W-ball.r,ball.x));ball.y=Math.max(100,Math.min(H-ball.r,ball.y));}}
-addEventListener('resize',resize,{passive:true});resize();
-function rand(a,b){return a+Math.random()*(b-a)} function choose(a){return a[Math.floor(Math.random()*a.length)]}
-function reset(){score=0;coins=0;mult=1;multTimer=0;spawnO=0;spawnC=0;spawnM=0;obs=[];items=[];parts=[];paused=false;ball={x:W/2,y:H*.75,r:22,vx:0,vy:0};state='play';menu.classList.add('hidden');over.classList.add('hidden');hud.classList.remove('hidden');pauseBtn.classList.remove('hidden');updateHud();}
-function updateHud(){scoreEl.textContent='PTS '+Math.floor(score);multiEl.textContent='x'+mult+(multTimer>0?' '+Math.ceil(multTimer)+'s':'');coinsEl.textContent='🪙 '+coins;bestEl.textContent='🏆 '+best;}
-function gameOver(){state='over';hud.classList.add('hidden');pauseBtn.classList.add('hidden');over.classList.remove('hidden');if(score>best){best=Math.floor(score);localStorage.setItem('bola_loca_best',best)}finalTxt.textContent='Puntuación: '+Math.floor(score)+'  ·  Monedas: '+coins;}
-function spawnObstacle(){const w=rand(55,115),h=rand(26,46);obs.push({x:rand(0,W-w),y:-h,w,h,vy:rand(2.8,5.6)+score/280,rot:rand(-.05,.05)});} 
-function spawnCoin(){items.push({type:'coin',x:rand(35,W-35),y:-30,r:16,vy:rand(2.2,4.3),v:1,spin:0});}
-function spawnMeteor(){const vals=[2,2,2,3,3,5,5,10];items.push({type:'meteor',x:rand(40,W-40),y:-40,r:22,vy:rand(2.4,4.7),v:choose(vals),spin:rand(0,6.28)});} 
-function boom(x,y,col,n=18){for(let i=0;i<n;i++)parts.push({x,y,vx:rand(-4,4),vy:rand(-5,4),life:rand(.35,.8),col,r:rand(2,5)});}
-function circleRect(c,r){let nx=Math.max(r.x,Math.min(c.x,r.x+r.w)),ny=Math.max(r.y,Math.min(c.y,r.y+r.h));let dx=c.x-nx,dy=c.y-ny;return dx*dx+dy*dy<c.r*c.r}
-function update(dt){ if(state!=='play'||paused)return; t+=dt; score+=dt*10*mult; if(multTimer>0){multTimer-=dt;if(multTimer<=0){mult=1;multTimer=0}} spawnO-=dt;spawnC-=dt;spawnM-=dt; if(spawnO<=0){spawnObstacle();spawnO=rand(.45,.85)} if(spawnC<=0){spawnCoin();spawnC=rand(.75,1.25)} if(spawnM<=0){spawnMeteor();spawnM=rand(2.0,3.8)}
- for(const o of obs){o.y+=o.vy;o.rot+=.025} obs=obs.filter(o=>o.y<H+80); for(const it of items){it.y+=it.vy;it.spin+=dt*5} items=items.filter(it=>it.y<H+80);
- for(const o of obs){if(circleRect(ball,o)){shake=.25;boom(ball.x,ball.y,'#ff3b5c',35);gameOver();return}}
- for(let i=items.length-1;i>=0;i--){const it=items[i],dx=ball.x-it.x,dy=ball.y-it.y;if(dx*dx+dy*dy<(ball.r+it.r)*(ball.r+it.r)){items.splice(i,1); if(it.type==='coin'){coins++;score+=25*mult;boom(it.x,it.y,'#ffd23f',14)} else {mult=it.v;multTimer=8;score+=50*mult;shake=.12;boom(it.x,it.y,'#b45cff',28)} }}
- for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.15;p.life-=dt} parts=parts.filter(p=>p.life>0); updateHud(); }
-function draw(){ctx.clearRect(0,0,W,H);let sx=0,sy=0;if(shake>0){shake-=.016;sx=rand(-7,7)*shake*4;sy=rand(-7,7)*shake*4}ctx.save();ctx.translate(sx,sy);
- const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#071c36');g.addColorStop(1,'#16051f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
- ctx.globalAlpha=.28;for(let i=0;i<55;i++){let x=(i*73+t*22)%W,y=(i*131+t*38)%(H+80)-80;ctx.fillStyle=i%3?'#fff':'#27e8ff';ctx.beginPath();ctx.arc(x,y,(i%4)+1,0,7);ctx.fill()}ctx.globalAlpha=1;
- for(const it of items){ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.spin); if(it.type==='coin'){ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(0,0,it.r,0,7);ctx.fill();ctx.strokeStyle='#fff3a3';ctx.lineWidth=4;ctx.stroke();ctx.fillStyle='#7c4a00';ctx.font='bold 18px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$',0,1)} else {ctx.fillStyle=it.v>=10?'#facc15':it.v>=5?'#b45cff':it.v>=3?'#38bdf8':'#94a3b8';ctx.beginPath();ctx.moveTo(0,-24);ctx.lineTo(22,0);ctx.lineTo(7,20);ctx.lineTo(-18,14);ctx.lineTo(-24,-10);ctx.closePath();ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='white';ctx.font='bold 15px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('x'+it.v,0,1)} ctx.restore();}
- for(const o of obs){ctx.save();ctx.translate(o.x+o.w/2,o.y+o.h/2);ctx.rotate(o.rot);ctx.fillStyle='#ff3b5c';ctx.fillRect(-o.w/2,-o.h/2,o.w,o.h);ctx.strokeStyle='#ffd1dc';ctx.lineWidth=3;ctx.strokeRect(-o.w/2,-o.h/2,o.w,o.h);ctx.restore();}
- ctx.shadowColor='#27e8ff';ctx.shadowBlur=22;ctx.fillStyle='#27e8ff';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,7);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(ball.x-7,ball.y-8,6,0,7);ctx.fill();
- for(const p of parts){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}ctx.globalAlpha=1;ctx.restore();
- if(paused&&state==='play'){ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(0,0,W,H);ctx.fillStyle='white';ctx.font='bold 42px Arial';ctx.textAlign='center';ctx.fillText('PAUSA',W/2,H/2)} }
-function loop(ts){const dt=Math.min((ts-last)/1000||0,0.033);last=ts;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
-function pos(e){return e.touches?e.touches[0].clientX:e.clientX}
-function posY(e){return e.touches?e.touches[0].clientY:e.clientY}
-function down(e){if(state!=='play')return;e.preventDefault();drag=true;ball.x=pos(e);ball.y=posY(e)}function move(e){if(!drag||state!=='play')return;e.preventDefault();ball.x=Math.max(ball.r,Math.min(W-ball.r,pos(e)));ball.y=Math.max(90,Math.min(H-ball.r,posY(e)))}function up(){drag=false}
-canvas.addEventListener('touchstart',down,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',up,{passive:false});canvas.addEventListener('mousedown',down);addEventListener('mousemove',move);addEventListener('mouseup',up);
-document.getElementById('playBtn').onclick=reset;document.getElementById('againBtn').onclick=reset;document.getElementById('menuBtn').onclick=()=>{state='menu';over.classList.add('hidden');menu.classList.remove('hidden');hud.classList.add('hidden');pauseBtn.classList.add('hidden')};pauseBtn.onclick=()=>{paused=!paused;pauseBtn.textContent=paused?'▶':'Ⅱ'};
-bestEl.textContent='🏆 '+best;
-})();
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0)}
+addEventListener('resize',resize);resize();
+
+let state='menu';
+let score=0,coins=0,best=Number(localStorage.getItem('bola_best')||0);
+let multiplier=1,multiplierTimer=0;
+let t=0,spawnObs=0,spawnCoin=0,spawnMeteor=0,shake=0,flash=0;
+let particles=[];
+const player={x:W/2,y:H*0.78,r:24,vx:0,vy:0};
+const obstacles=[], coinItems=[], meteors=[];
+
+function reset(){
+ state='play';score=0;coins=0;multiplier=1;multiplierTimer=0;t=0;spawnObs=0;spawnCoin=0;spawnMeteor=0;shake=0;flash=0;
+ obstacles.length=0;coinItems.length=0;meteors.length=0;particles.length=0;
+ player.x=W/2;player.y=H*0.78;player.vx=0;player.vy=0;
+}
+function rnd(a,b){return Math.random()*(b-a)+a}
+function dist(a,b,c,d){return Math.hypot(a-c,b-d)}
+function addParticles(x,y,color,n=24,power=4){for(let i=0;i<n;i++){particles.push({x,y,vx:rnd(-power,power),vy:rnd(-power,power),life:rnd(25,55),max:55,r:rnd(2,5),color})}}
+function spawnObstacle(){obstacles.push({x:rnd(35,W-35),y:-50,w:rnd(55,120),h:rnd(18,35),vy:rnd(2.2,4.2)+t*0.002})}
+function spawnCoinItem(){coinItems.push({x:rnd(30,W-30),y:-30,r:12,vy:rnd(2.5,4.3),rot:0})}
+function randomMultiplier(){const values=[2,2,2,3,3,5,5,10];return values[Math.floor(Math.random()*values.length)]}
+function spawnMeteor(){meteors.push({x:rnd(35,W-35),y:-40,r:rnd(18,24),vy:rnd(2.4,3.8),rot:rnd(0,6.28),spin:rnd(-0.04,0.04),mul:randomMultiplier()})}
+
+function pointer(x,y){ if(state==='menu'||state==='over'){reset();return} player.x=x; player.y=y; }
+canvas.addEventListener('pointerdown',e=>{e.preventDefault();pointer(e.clientX,e.clientY)});
+canvas.addEventListener('pointermove',e=>{e.preventDefault();if(state==='play'){player.x=e.clientX;player.y=e.clientY}}, {passive:false});
+
+function update(){
+ t++;
+ if(state!=='play') return;
+ score += 0.08*multiplier;
+ if(score>best){best=Math.floor(score);localStorage.setItem('bola_best',best)}
+ if(multiplierTimer>0){multiplierTimer--; if(multiplierTimer<=0) multiplier=1;}
+ spawnObs--;spawnCoin--;spawnMeteor--;
+ if(spawnObs<=0){spawnObstacle();spawnObs=Math.max(24,70-t*0.01)}
+ if(spawnCoin<=0){spawnCoinItem();spawnCoin=rnd(45,90)}
+ if(spawnMeteor<=0){spawnMeteor();spawnMeteor=rnd(160,260)}
+ for(const o of obstacles)o.y+=o.vy;
+ for(const c of coinItems){c.y+=c.vy;c.rot+=0.08}
+ for(const m of meteors){m.y+=m.vy;m.rot+=m.spin}
+ for(let i=obstacles.length-1;i>=0;i--){const o=obstacles[i]; if(o.y>H+80)obstacles.splice(i,1); else if(player.x+player.r>o.x-o.w/2&&player.x-player.r<o.x+o.w/2&&player.y+player.r>o.y-o.h/2&&player.y-player.r<o.y+o.h/2){state='over';shake=14;addParticles(player.x,player.y,'#ff4d4d',45,7)}}
+ for(let i=coinItems.length-1;i>=0;i--){const c=coinItems[i]; if(c.y>H+50)coinItems.splice(i,1); else if(dist(player.x,player.y,c.x,c.y)<player.r+c.r){coins++;score+=10*multiplier;addParticles(c.x,c.y,'#ffd84a',14,3);coinItems.splice(i,1)}}
+ for(let i=meteors.length-1;i>=0;i--){const m=meteors[i]; if(m.y>H+60)meteors.splice(i,1); else if(dist(player.x,player.y,m.x,m.y)<player.r+m.r){multiplier=m.mul;multiplierTimer=420;score+=25*m.mul;flash=1;shake=8;addParticles(m.x,m.y,'#9cf6ff',55,8);addParticles(m.x,m.y,'#ffffff',28,10);meteors.splice(i,1)}}
+ for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.03;p.life--;if(p.life<=0)particles.splice(i,1)}
+ if(shake>0)shake*=0.85; if(flash>0)flash-=0.035;
+}
+
+function drawMeteor(m){
+ ctx.save();ctx.translate(m.x,m.y);ctx.rotate(m.rot);
+ // cola luminosa
+ const g=ctx.createLinearGradient(-45,-10,15,5);g.addColorStop(0,'rgba(255,120,30,0)');g.addColorStop(0.45,'rgba(255,118,35,0.55)');g.addColorStop(1,'rgba(255,235,120,0.9)');
+ ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-55,-16);ctx.lineTo(-8,-8);ctx.lineTo(-5,12);ctx.lineTo(-58,20);ctx.closePath();ctx.fill();
+ // roca irregular
+ ctx.fillStyle='#8b5a3c';ctx.strokeStyle='#ffb45c';ctx.lineWidth=2;
+ ctx.beginPath();
+ ctx.moveTo(-m.r*0.8,-m.r*0.35);ctx.lineTo(-m.r*0.25,-m.r*0.9);ctx.lineTo(m.r*0.65,-m.r*0.62);ctx.lineTo(m.r*0.9,0);ctx.lineTo(m.r*0.45,m.r*0.75);ctx.lineTo(-m.r*0.45,m.r*0.85);ctx.lineTo(-m.r*0.95,m.r*0.2);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.fillStyle='#c47a47';ctx.beginPath();ctx.arc(-m.r*.2,-m.r*.15,4,0,Math.PI*2);ctx.arc(m.r*.35,m.r*.2,5,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='white';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('x?',0,1);
+ ctx.restore();
+}
+function draw(){
+ ctx.save();
+ if(shake>0)ctx.translate(rnd(-shake,shake),rnd(-shake,shake));
+ ctx.clearRect(-20,-20,W+40,H+40);
+ // fondo estrellas
+ ctx.fillStyle='rgba(255,255,255,.45)'; for(let i=0;i<45;i++){let x=(i*73+t*.15)%W,y=(i*113)%H;ctx.fillRect(x,y,2,2)}
+ // objetos
+ for(const o of obstacles){ctx.fillStyle='#ef4444';ctx.fillRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h);ctx.strokeStyle='#fecaca';ctx.strokeRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h)}
+ for(const c of coinItems){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(0,0,c.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff7aa';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#8a5a00';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$',0,1);ctx.restore()}
+ for(const m of meteors)drawMeteor(m);
+ // bola
+ const bg=ctx.createRadialGradient(player.x-8,player.y-10,4,player.x,player.y,player.r);bg.addColorStop(0,'#dff9ff');bg.addColorStop(.35,'#38bdf8');bg.addColorStop(1,'#075985');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=3;ctx.stroke();
+ for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
+ ctx.restore();
+ // flash
+ if(flash>0){ctx.fillStyle=`rgba(255,255,255,${flash*.55})`;ctx.fillRect(0,0,W,H);ctx.strokeStyle=`rgba(130,230,255,${flash})`;ctx.lineWidth=8;ctx.beginPath();ctx.arc(player.x,player.y,80*(1.05-flash)+20,0,Math.PI*2);ctx.stroke();}
+ // HUD
+ ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,92);
+ ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.textAlign='left';ctx.fillText('Puntos: '+Math.floor(score),16,28);ctx.fillText('Monedas: '+coins,16,56);ctx.fillText('Récord: '+best,16,82);
+ ctx.textAlign='right';ctx.fillStyle=multiplier>1?'#67e8f9':'white';ctx.fillText('Multiplicador: x'+multiplier, W-16,28); if(multiplier>1){ctx.fillStyle='#d1fae5';ctx.fillText('Tiempo: '+Math.ceil(multiplierTimer/60)+'s',W-16,56)}
+ if(state==='menu'){overlay('BOLA LOCA','JUGAR','Mueve la bola con el dedo. Coge meteoritos para multiplicadores aleatorios.');}
+ if(state==='over'){overlay('GAME OVER','TOCA PARA REINICIAR','Puntos: '+Math.floor(score)+'  |  Monedas: '+coins);}
+}
+function overlay(title,button,sub){ctx.fillStyle='rgba(0,0,0,.62)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#67e8f9';ctx.font='bold 48px Arial';ctx.fillText(title,W/2,H*.34);ctx.fillStyle='white';ctx.font='20px Arial';ctx.fillText(sub,W/2,H*.43);ctx.fillStyle='#22c55e';roundRect(W/2-110,H*.52,220,66,18);ctx.fill();ctx.fillStyle='white';ctx.font='bold 27px Arial';ctx.fillText(button,W/2,H*.52+43)}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function loop(){update();draw();requestAnimationFrame(loop)}loop();
 </script>
 </body>
 </html>
