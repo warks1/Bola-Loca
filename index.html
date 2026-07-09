@@ -1,75 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Bola Loca - Demo Jugable</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bola Loca - Meteoritos</title>
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#060716;font-family:Arial,Helvetica,sans-serif;color:white;touch-action:none;overscroll-behavior:none}
-  #game{position:fixed;inset:0;width:100vw;height:100dvh;display:block;background:radial-gradient(circle at 50% 25%,#20235a 0%,#101338 42%,#050611 100%)}
-  #ui{position:fixed;inset:0;pointer-events:none}
-  .top{position:absolute;top:calc(14px + env(safe-area-inset-top));left:12px;right:12px;display:flex;gap:8px;align-items:flex-start;z-index:5}
-  .box{background:rgba(10,12,32,.78);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px 10px;min-width:68px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
-  .label{font-size:12px;color:#b9b6ff;font-weight:700}.num{font-size:24px;font-weight:900;line-height:1.05}
-  .pause{margin-left:auto;width:58px;height:58px;border-radius:18px;border:0;background:linear-gradient(135deg,#22e7ff,#7c3cff);color:white;font-size:26px;font-weight:900;pointer-events:auto}
-  .center{position:absolute;left:20px;right:20px;top:50%;transform:translateY(-50%);background:rgba(8,9,26,.86);border:1px solid rgba(255,255,255,.16);border-radius:28px;padding:28px 22px;text-align:center;z-index:10;box-shadow:0 20px 60px rgba(0,0,0,.45);pointer-events:auto}
-  .logo{width:105px;height:105px;border-radius:50%;margin:0 auto 18px;background:radial-gradient(circle at 30% 24%,#fff 0%,#3ff5ff 15%,#24d6ff 32%,#424cff 58%,#832eea 100%);box-shadow:0 0 42px #18e8ff}
-  h1{font-size:46px;margin:0 0 10px;font-weight:1000}.p{color:#dedcff;font-size:19px;line-height:1.35;margin:0 0 22px;font-weight:700}
-  .btn{width:100%;border:0;border-radius:20px;padding:20px 18px;margin:8px 0;background:linear-gradient(90deg,#19e1f0,#833cff);color:white;font-size:26px;font-weight:1000;pointer-events:auto}.btn2{background:#2b2c42;font-size:22px}
-  .hint{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom));left:16px;right:16px;text-align:center;color:#d8d5ff;font-size:15px;font-weight:700;z-index:5}
+html,body{margin:0;padding:0;overflow:hidden;background:#07111f;font-family:Arial,sans-serif;touch-action:none}canvas{display:block;background:linear-gradient(180deg,#101c35,#030712)}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="ui">
-  <div class="top" id="hud">
-    <div class="box"><div class="label">Puntos</div><div class="num" id="score">0</div></div>
-    <div class="box"><div class="label">Nivel</div><div class="num" id="level">1</div></div>
-    <div class="box"><div class="label">Récord</div><div class="num" id="best">0</div></div>
-    <button class="pause" id="pause">Ⅱ</button>
-  </div>
-  <div class="center" id="menu">
-    <div class="logo"></div>
-    <h1>Bola Loca</h1>
-    <p class="p">Arrastra la bola, esquiva los obstáculos rojos y recoge monedas amarillas.</p>
-    <button class="btn" id="play">Jugar</button>
-    <button class="btn btn2" id="reset">Reiniciar progreso</button>
-  </div>
-  <div class="hint" id="hint">Toca Jugar. Luego mueve el dedo por la pantalla.</div>
-</div>
 <script>
-'use strict';
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-const menu=document.getElementById('menu'),scoreEl=document.getElementById('score'),levelEl=document.getElementById('level'),bestEl=document.getElementById('best'),hint=document.getElementById('hint');
-let W=0,H=0,DPR=1,running=false,paused=false,last=0,score=0,level=1,best=Number(localStorage.getItem('bola_loca_best')||0),coins=0;
-bestEl.textContent=best;
-const ball={x:180,y:500,r:22,targetX:180,targetY:500};
-let obstacles=[],bonuses=[];
-function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=Math.max(320,window.innerWidth);H=Math.max(520,window.innerHeight);canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);ball.x=clamp(ball.x,ball.r,W-ball.r);ball.y=clamp(ball.y,ball.r+90,H-ball.r-20);}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-window.addEventListener('resize',resize,{passive:true});resize();
-function resetGame(){score=0;level=1;coins=0;obstacles=[];bonuses=[];ball.x=W/2;ball.y=H-120;ball.targetX=ball.x;ball.targetY=ball.y;for(let i=0;i<6;i++)spawnObstacle(-i*120);for(let i=0;i<4;i++)spawnBonus(-60-i*180);running=true;paused=false;menu.style.display='none';hint.textContent='Arrastra la bola. Evita rojo, recoge amarillo.';updateHud();last=performance.now();}
-function updateHud(){scoreEl.textContent=score;levelEl.textContent=level;bestEl.textContent=best;}
-function spawnObstacle(offsetY){const w=50+Math.random()*70;obstacles.push({x:Math.random()*(W-w),y:offsetY||-80,w,h:24+Math.random()*22,s:2.2+level*.35+Math.random()*1.4});}
-function spawnBonus(offsetY){bonuses.push({x:30+Math.random()*(W-60),y:offsetY||-140,r:14,s:2+level*.25,taken:false});}
-function pointer(e){let x,y;if(e.touches&&e.touches[0]){x=e.touches[0].clientX;y=e.touches[0].clientY}else{x=e.clientX;y=e.clientY}ball.targetX=clamp(x,ball.r,W-ball.r);ball.targetY=clamp(y,ball.r+90,H-ball.r-20);}
-['touchstart','touchmove'].forEach(ev=>canvas.addEventListener(ev,e=>{e.preventDefault();if(running&&!paused)pointer(e)},{passive:false}));
-['mousedown','mousemove'].forEach(ev=>canvas.addEventListener(ev,e=>{if(running&&!paused)pointer(e)}));
-document.getElementById('play').onclick=resetGame;
-document.getElementById('reset').onclick=()=>{localStorage.removeItem('bola_loca_best');best=0;bestEl.textContent=0;};
-document.getElementById('pause').onclick=()=>{if(!running)return;paused=!paused;hint.textContent=paused?'Pausado. Pulsa pausa para seguir.':'Arrastra la bola. Evita rojo, recoge amarillo.'};
-function circleRect(c,r){return c.x+c.r>r.x&&c.x-c.r<r.x+r.w&&c.y+c.r>r.y&&c.y-c.r<r.y+r.h;}
-function update(dt){if(!running||paused)return;ball.x+=(ball.targetX-ball.x)*Math.min(1,dt*9);ball.y+=(ball.targetY-ball.y)*Math.min(1,dt*9);for(const o of obstacles)o.y+=o.s*dt*60;for(const b of bonuses)b.y+=b.s*dt*60;for(const o of obstacles){if(circleRect(ball,o)){gameOver();return;}if(o.y>H+60){Object.assign(o,{x:Math.random()*(W-o.w),y:-80,w:50+Math.random()*75,h:24+Math.random()*24,s:2.2+level*.35+Math.random()*1.4});score++;if(score%10===0)level++;}}
-for(const b of bonuses){const dx=ball.x-b.x,dy=ball.y-b.y;if(Math.hypot(dx,dy)<ball.r+b.r){score+=3;b.y=H+100;}if(b.y>H+60){Object.assign(b,{x:30+Math.random()*(W-60),y:-120,r:14,s:2+level*.25});}}
-if(score>best){best=score;localStorage.setItem('bola_loca_best',best);}updateHud();}
-function gameOver(){running=false;menu.style.display='block';menu.querySelector('h1').textContent='Game Over';menu.querySelector('.p').textContent='Puntuación: '+score+' · Récord: '+best;document.getElementById('play').textContent='Volver a jugar';hint.textContent='Has chocado con un obstáculo rojo.';}
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.04)';for(let y=120;y<H;y+=70){ctx.fillRect(0,y,W,1)}
-for(const b of bonuses){ctx.beginPath();ctx.fillStyle='#ffd84d';ctx.shadowColor='#ffd84d';ctx.shadowBlur=18;ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff3a3';ctx.beginPath();ctx.arc(b.x-4,b.y-5,4,0,Math.PI*2);ctx.fill();}
-for(const o of obstacles){ctx.fillStyle='#ff3b5f';ctx.shadowColor='#ff3b5f';ctx.shadowBlur=18;roundRect(o.x,o.y,o.w,o.h,12);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.35)';roundRect(o.x+8,o.y+5,o.w*.35,5,5);ctx.fill();}
-ctx.beginPath();ctx.shadowColor='#23e7ff';ctx.shadowBlur=28;const g=ctx.createRadialGradient(ball.x-8,ball.y-10,3,ball.x,ball.y,ball.r);g.addColorStop(0,'#fff');g.addColorStop(.2,'#33f4ff');g.addColorStop(.65,'#3f55ff');g.addColorStop(1,'#8c2cff');ctx.fillStyle=g;ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
-function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-function loop(t){const dt=Math.min(.033,(t-last)/1000||.016);last=t;update(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+let W=innerWidth,H=innerHeight;canvas.width=W;canvas.height=H;
+addEventListener('resize',()=>{W=innerWidth;H=innerHeight;canvas.width=W;canvas.height=H;});
+
+let state='menu';
+let score=0,coins=0,best=Number(localStorage.getItem('bolaloca_best')||0);
+let multiplier=1,multiplierTimer=0;
+let speed=3.2;
+let frame=0;
+let player={x:W/2,y:H-110,r:24};
+let obstacles=[],coinItems=[],meteorites=[],particles=[];
+
+function rand(a,b){return Math.random()*(b-a)+a}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function reset(){
+ state='play';score=0;coins=0;multiplier=1;multiplierTimer=0;speed=3.2;frame=0;
+ player={x:W/2,y:H-110,r:24};obstacles=[];coinItems=[];meteorites=[];particles=[];
+}
+function addParticles(x,y,color,n=12){for(let i=0;i<n;i++)particles.push({x,y,vx:rand(-3,3),vy:rand(-3,3),life:35,color});}
+function spawnObstacle(){obstacles.push({x:rand(35,W-35),y:-40,w:rand(50,95),h:rand(22,36),vy:speed+rand(0,1.6)});}
+function spawnCoin(){coinItems.push({x:rand(30,W-30),y:-25,r:14,vy:speed+rand(.2,1.2)});}
+function spawnMeteorite(){
+ const values=[2,3,5,2,3,4,6,8,10];
+ meteorites.push({x:rand(35,W-35),y:-40,r:22,vy:speed+rand(.4,1.5),value:pick(values),rot:rand(0,6.28)});
+}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function pointer(x){if(state==='menu'||state==='over'){reset();return}player.x=Math.max(player.r,Math.min(W-player.r,x));}
+canvas.addEventListener('touchstart',e=>{e.preventDefault();pointer(e.touches[0].clientX)},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(state==='play')pointer(e.touches[0].clientX)},{passive:false});
+canvas.addEventListener('mousedown',e=>pointer(e.clientX));
+canvas.addEventListener('mousemove',e=>{if(state==='play')pointer(e.clientX)});
+
+function update(){
+ if(state!=='play')return;
+ frame++;score+=0.05*multiplier;
+ if(frame%42===0)spawnObstacle();
+ if(frame%75===0)spawnCoin();
+ if(frame%190===0)spawnMeteorite();
+ if(frame%600===0)speed+=.35;
+ if(multiplierTimer>0){multiplierTimer--; if(multiplierTimer<=0)multiplier=1;}
+ obstacles.forEach(o=>o.y+=o.vy); coinItems.forEach(c=>c.y+=c.vy); meteorites.forEach(m=>{m.y+=m.vy;m.rot+=.08});
+ particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--});
+ obstacles=obstacles.filter(o=>o.y<H+80); coinItems=coinItems.filter(c=>c.y<H+50); meteorites=meteorites.filter(m=>m.y<H+60); particles=particles.filter(p=>p.life>0);
+ for(const o of obstacles){
+   let cx=Math.max(o.x-o.w/2,Math.min(player.x,o.x+o.w/2));
+   let cy=Math.max(o.y-o.h/2,Math.min(player.y,o.y+o.h/2));
+   if(Math.hypot(player.x-cx,player.y-cy)<player.r){state='over';best=Math.max(best,Math.floor(score));localStorage.setItem('bolaloca_best',best);addParticles(player.x,player.y,'#ef4444',30);}
+ }
+ coinItems=coinItems.filter(c=>{if(dist(player,c)<player.r+c.r){coins++;score+=10*multiplier;addParticles(c.x,c.y,'#facc15');return false}return true});
+ meteorites=meteorites.filter(m=>{if(dist(player,m)<player.r+m.r){multiplier=m.value;multiplierTimer=360;addParticles(m.x,m.y,'#a855f7',22);return false}return true});
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();}
+function drawMeteorite(m){
+ ctx.save();ctx.translate(m.x,m.y);ctx.rotate(m.rot);
+ ctx.fillStyle='#7c2d12';ctx.beginPath();ctx.ellipse(0,0,m.r*1.15,m.r*.85,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#fb923c';ctx.beginPath();ctx.arc(-7,-4,5,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#f97316';ctx.beginPath();ctx.arc(7,5,4,0,Math.PI*2);ctx.fill();
+ ctx.restore();
+ ctx.fillStyle='white';ctx.font='bold 15px Arial';ctx.textAlign='center';ctx.fillText('x'+m.value,m.x,m.y+5);
+}
+function draw(){
+ ctx.clearRect(0,0,W,H);
+ ctx.fillStyle='rgba(255,255,255,.06)';for(let i=0;i<40;i++){let x=(i*97+frame*.3)%W,y=(i*137+frame*.8)%H;ctx.fillRect(x,y,2,2)}
+ if(state==='menu'){
+   ctx.textAlign='center';ctx.fillStyle='#38bdf8';ctx.font='bold 46px Arial';ctx.fillText('BOLA LOCA',W/2,H/2-80);
+   ctx.fillStyle='white';ctx.font='22px Arial';ctx.fillText('Pulsa JUGAR para probar',W/2,H/2-30);
+   ctx.fillStyle='#22c55e';roundRect(W/2-90,H/2+10,180,58,18);ctx.fillStyle='#052e16';ctx.font='bold 26px Arial';ctx.fillText('JUGAR',W/2,H/2+48);return;
+ }
+ obstacles.forEach(o=>{ctx.fillStyle='#ef4444';roundRect(o.x-o.w/2,o.y-o.h/2,o.w,o.h,10)});
+ coinItems.forEach(c=>{ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#854d0e';ctx.font='bold 16px Arial';ctx.textAlign='center';ctx.fillText('$',c.x,c.y+5)});
+ meteorites.forEach(drawMeteorite);
+ ctx.fillStyle='#22d3ee';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=3;ctx.stroke();
+ particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/35);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1});
+ ctx.fillStyle='rgba(0,0,0,.45)';roundRect(10,10,W-20,82,18);
+ ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.textAlign='left';ctx.fillText('Puntos: '+Math.floor(score),24,38);ctx.fillText('Monedas: '+coins,24,66);
+ ctx.textAlign='right';ctx.fillText('Récord: '+best,W-24,38);ctx.fillStyle=multiplier>1?'#c084fc':'white';ctx.fillText('Multiplicador: x'+multiplier,W-24,66);
+ if(multiplier>1){ctx.fillStyle='#c084fc';ctx.font='bold 15px Arial';ctx.textAlign='center';ctx.fillText('Meteorito activo: x'+multiplier, W/2, 112)}
+ if(state==='over'){
+   ctx.fillStyle='rgba(0,0,0,.68)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#ef4444';ctx.font='bold 42px Arial';ctx.fillText('GAME OVER',W/2,H/2-55);ctx.fillStyle='white';ctx.font='22px Arial';ctx.fillText('Puntos: '+Math.floor(score),W/2,H/2-10);ctx.fillText('Toca para reiniciar',W/2,H/2+40);
+ }
+}
+function loop(){update();draw();requestAnimationFrame(loop)}loop();
 </script>
 </body>
 </html>
