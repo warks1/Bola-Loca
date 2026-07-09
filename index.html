@@ -1,64 +1,75 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Bola Loca - Demo jugable</title>
-<style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050514;font-family:Arial,Helvetica,sans-serif;color:white;touch-action:none}
-  #game{position:fixed;inset:0;width:100vw;height:100vh;display:block;background:radial-gradient(circle at 50% 20%,#20205a 0%,#09091d 45%,#03030b 100%)}
-  #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;pointer-events:none}
-  .card{width:min(520px,92vw);padding:28px 22px;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:rgba(10,10,30,.78);box-shadow:0 20px 80px rgba(0,0,0,.45);text-align:center;backdrop-filter:blur(8px)}
-  h1{font-size:48px;line-height:1;margin:12px 0 12px;font-weight:900}.sub{font-size:19px;line-height:1.35;color:#d9d6ff;margin-bottom:22px}.btn{pointer-events:auto;border:0;width:100%;padding:19px 20px;border-radius:22px;font-size:28px;font-weight:900;color:white;background:linear-gradient(90deg,#12e7f1,#884dff);box-shadow:0 0 34px rgba(18,231,241,.25)}
-  .small{font-size:15px;color:#bdb8ff;margin-top:18px;line-height:1.4}.hidden{display:none!important}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#070b1a">
+  <title>Bola Loca</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="game"></canvas>
-<div id="overlay">
-  <div class="card">
-    <div style="font-size:64px">🔵</div>
-    <h1>Bola Loca</h1>
-    <div class="sub">Arrastra la bola con el dedo.<br>Esquiva los bloques rojos y recoge monedas.</div>
-    <button id="playBtn" class="btn">JUGAR</button>
-    <div class="small">Demo 100% jugable. No necesita internet ni archivos extra.</div>
+  <div id="app">
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hud hidden">
+      <div><b>Puntos</b><span id="score">0</span></div>
+      <div><b>Monedas</b><span id="coins">0</span></div>
+      <div><b>Gemas</b><span id="gems">0</span></div>
+      <div><b>Récord</b><span id="best">0</span></div>
+    </div>
+
+    <section id="screenMenu" class="screen">
+      <div class="card hero">
+        <div class="logoBall"></div>
+        <h1>BOLA LOCA</h1>
+        <p>Esquiva obstáculos, recoge monedas y aguanta todo lo posible.</p>
+        <button id="btnPlay" class="primary">JUGAR</button>
+        <button id="btnShop">TIENDA</button>
+        <button id="btnSettings">AJUSTES</button>
+        <small>Arrastra la bola con el dedo.</small>
+      </div>
+    </section>
+
+    <section id="screenShop" class="screen hidden">
+      <div class="card">
+        <h2>Tienda de skins</h2>
+        <div id="skinList" class="skinList"></div>
+        <button class="back">VOLVER</button>
+      </div>
+    </section>
+
+    <section id="screenSettings" class="screen hidden">
+      <div class="card">
+        <h2>Ajustes</h2>
+        <button id="btnSound">Sonido: ON</button>
+        <button id="btnVibration">Vibración: ON</button>
+        <button class="back">VOLVER</button>
+      </div>
+    </section>
+
+    <section id="screenPause" class="screen hidden">
+      <div class="card">
+        <h2>Pausa</h2>
+        <button id="btnResume" class="primary">SEGUIR</button>
+        <button id="btnExit">MENÚ</button>
+      </div>
+    </section>
+
+    <section id="screenGameOver" class="screen hidden">
+      <div class="card">
+        <h2>GAME OVER</h2>
+        <p id="finalScore">Puntos: 0</p>
+        <button id="btnRetry" class="primary">REINTENTAR</button>
+        <button id="btnMenu">MENÚ</button>
+      </div>
+    </section>
+
+    <button id="pauseBtn" class="pause hidden">Ⅱ</button>
   </div>
-</div>
-<script>
-(() => {
-'use strict';
-const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
-const overlay=document.getElementById('overlay'), playBtn=document.getElementById('playBtn');
-let W=0,H=0,DPR=1,running=false,gameOver=false,last=0,score=0,coins=0,best=Number(localStorage.getItem('bl_best')||0),level=1;
-const ball={x:0,y:0,r:22,targetX:0,targetY:0};
-let obstacles=[], pickups=[], spawnT=0, coinT=0;
-function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(!running){ball.x=W/2;ball.y=H*.72;ball.targetX=ball.x;ball.targetY=ball.y}}
-addEventListener('resize',resize,{passive:true});resize();
-function reset(){running=true;gameOver=false;overlay.classList.add('hidden');score=0;coins=0;level=1;obstacles=[];pickups=[];spawnT=0;coinT=0;ball.r=Math.max(18,Math.min(28,W*.055));ball.x=W/2;ball.y=H*.74;ball.targetX=ball.x;ball.targetY=ball.y;last=performance.now();requestAnimationFrame(loop)}
-playBtn.addEventListener('click',reset);playBtn.addEventListener('touchend',e=>{e.preventDefault();reset()},{passive:false});
-function setTarget(x,y){if(!running||gameOver)return;ball.targetX=Math.max(ball.r,Math.min(W-ball.r,x));ball.targetY=Math.max(100,Math.min(H-ball.r,y));}
-canvas.addEventListener('pointerdown',e=>{if(gameOver){reset();return} setTarget(e.clientX,e.clientY); canvas.setPointerCapture?.(e.pointerId);});
-canvas.addEventListener('pointermove',e=>setTarget(e.clientX,e.clientY));
-canvas.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
-function spawnObstacle(){const size=34+Math.random()*45; obstacles.push({x:Math.random()*(W-size),y:-size,w:size,h:size,vy:145+level*18+Math.random()*75});}
-function spawnCoin(){pickups.push({x:30+Math.random()*(W-60),y:-30,r:13,vy:120+Math.random()*55});}
-function circleRect(c,r){const nx=Math.max(r.x,Math.min(c.x,r.x+r.w)), ny=Math.max(r.y,Math.min(c.y,r.y+r.h)); return Math.hypot(c.x-nx,c.y-ny)<c.r;}
-function update(dt){ball.x+=(ball.targetX-ball.x)*Math.min(1,dt*12);ball.y+=(ball.targetY-ball.y)*Math.min(1,dt*12);score+=dt*10;level=1+Math.floor(score/120);spawnT-=dt;coinT-=dt;if(spawnT<=0){spawnObstacle();spawnT=Math.max(.28,.9-level*.035)} if(coinT<=0){spawnCoin();coinT=1.15+Math.random()*.8} obstacles.forEach(o=>o.y+=o.vy*dt); pickups.forEach(p=>p.y+=p.vy*dt); obstacles=obstacles.filter(o=>o.y<H+80); pickups=pickups.filter(p=>p.y<H+60); for(const o of obstacles){if(circleRect(ball,o)){end();return}} for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(ball.x-p.x,ball.y-p.y)<ball.r+p.r){coins++;score+=25;pickups.splice(i,1)}}}
-function end(){gameOver=true;running=false;best=Math.max(best,Math.floor(score));localStorage.setItem('bl_best',best);overlay.classList.remove('hidden');overlay.querySelector('h1').textContent='Fin de partida';overlay.querySelector('.sub').innerHTML='Puntos: <b>'+Math.floor(score)+'</b> · Monedas: <b>'+coins+'</b><br>Récord: <b>'+best+'</b>';playBtn.textContent='VOLVER A JUGAR';}
-function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.stroke();}
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.06)';for(let y=120;y<H;y+=80){ctx.fillRect(0,y,W,1)}
- // HUD
- const boxes=[['Puntos',Math.floor(score)],['Monedas',coins],['Nivel',level],['Récord',best]]; let x=14; boxes.forEach(b=>{ctx.fillStyle='rgba(12,12,34,.9)';ctx.strokeStyle='rgba(255,255,255,.14)';roundRect(x,24,82,62,14);ctx.fillStyle='#bdb8ff';ctx.font='bold 14px Arial';ctx.fillText(b[0],x+12,48);ctx.fillStyle='white';ctx.font='900 28px Arial';ctx.fillText(b[1],x+12,78);x+=96});
- // objects
- pickups.forEach(p=>{ctx.beginPath();ctx.fillStyle='#ffd84d';ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#9a6b00';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText('$',p.x,p.y+5);ctx.textAlign='left'});
- obstacles.forEach(o=>{ctx.fillStyle='#ff365e';ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=2;roundRect(o.x,o.y,o.w,o.h,10)});
- const g=ctx.createRadialGradient(ball.x-8,ball.y-10,2,ball.x,ball.y,ball.r*1.8);g.addColorStop(0,'#fff');g.addColorStop(.25,'#19efff');g.addColorStop(1,'#7b2cff');ctx.beginPath();ctx.fillStyle=g;ctx.shadowColor='#19efff';ctx.shadowBlur=24;ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
- if(running){ctx.fillStyle='rgba(255,255,255,.72)';ctx.font='bold 16px Arial';ctx.textAlign='center';ctx.fillText('Arrastra la bola',W/2,H-32);ctx.textAlign='left';}
-}
-function loop(t){if(!running&&!gameOver){draw();return} const dt=Math.min(.033,(t-last)/1000||0);last=t;if(running)update(dt);draw();if(running)requestAnimationFrame(loop)}
-draw();
-})();
-</script>
+  <script src="js/save.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>
