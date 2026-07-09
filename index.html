@@ -1,156 +1,63 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0f172a">
-  <title>Bola Loca - Demo Jugable</title>
-  <style>
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#0f172a;color:white;font-family:Arial,Helvetica,sans-serif;touch-action:none;overscroll-behavior:none}
-    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#111827,#020617)}
-    canvas{width:100vw;height:100vh;display:block;touch-action:none;background:radial-gradient(circle at top,#1e293b,#020617 70%)}
-    #ui{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;padding:24px;text-align:center}
-    .panel{pointer-events:auto;max-width:420px;width:100%;padding:26px;border:1px solid rgba(255,255,255,.18);border-radius:26px;background:rgba(15,23,42,.82);box-shadow:0 20px 70px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
-    h1{margin:0 0 10px;font-size:42px;letter-spacing:1px;color:#22d3ee}
-    p{margin:8px 0;color:#dbeafe;line-height:1.35;font-size:17px}
-    button{margin-top:18px;width:100%;border:0;border-radius:18px;padding:18px 22px;background:#22d3ee;color:#06202a;font-weight:900;font-size:22px;cursor:pointer;box-shadow:0 10px 30px rgba(34,211,238,.25)}
-    .small{font-size:14px;color:#94a3b8;margin-top:12px}
-    #hud{position:fixed;left:14px;right:14px;top:calc(12px + env(safe-area-inset-top));display:flex;justify-content:space-between;gap:12px;pointer-events:none;font-weight:800;text-shadow:0 2px 8px #000;font-size:18px}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Bola Loca - Demo jugable</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050514;font-family:Arial,Helvetica,sans-serif;color:white;touch-action:none}
+  #game{position:fixed;inset:0;width:100vw;height:100vh;display:block;background:radial-gradient(circle at 50% 20%,#20205a 0%,#09091d 45%,#03030b 100%)}
+  #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;pointer-events:none}
+  .card{width:min(520px,92vw);padding:28px 22px;border:1px solid rgba(255,255,255,.18);border-radius:28px;background:rgba(10,10,30,.78);box-shadow:0 20px 80px rgba(0,0,0,.45);text-align:center;backdrop-filter:blur(8px)}
+  h1{font-size:48px;line-height:1;margin:12px 0 12px;font-weight:900}.sub{font-size:19px;line-height:1.35;color:#d9d6ff;margin-bottom:22px}.btn{pointer-events:auto;border:0;width:100%;padding:19px 20px;border-radius:22px;font-size:28px;font-weight:900;color:white;background:linear-gradient(90deg,#12e7f1,#884dff);box-shadow:0 0 34px rgba(18,231,241,.25)}
+  .small{font-size:15px;color:#bdb8ff;margin-top:18px;line-height:1.4}.hidden{display:none!important}
+</style>
 </head>
 <body>
-<div id="wrap"><canvas id="game"></canvas></div>
-<div id="hud"><div id="score">Puntos: 0</div><div id="best">Récord: 0</div></div>
-<div id="ui">
-  <div class="panel" id="panel">
-    <h1>BOLA LOCA</h1>
-    <p>Evita que la bola caiga.</p>
-    <p>Mueve la barra arrastrando el dedo por la pantalla.</p>
-    <button id="startBtn" type="button">JUGAR</button>
-    <div class="small">Funciona en iPhone, Android y ordenador.</div>
+<canvas id="game"></canvas>
+<div id="overlay">
+  <div class="card">
+    <div style="font-size:64px">🔵</div>
+    <h1>Bola Loca</h1>
+    <div class="sub">Arrastra la bola con el dedo.<br>Esquiva los bloques rojos y recoge monedas.</div>
+    <button id="playBtn" class="btn">JUGAR</button>
+    <div class="small">Demo 100% jugable. No necesita internet ni archivos extra.</div>
   </div>
 </div>
 <script>
-(function(){
-  const canvas=document.getElementById('game');
-  const ctx=canvas.getContext('2d');
-  const ui=document.getElementById('ui');
-  const panel=document.getElementById('panel');
-  const startBtn=document.getElementById('startBtn');
-  const scoreEl=document.getElementById('score');
-  const bestEl=document.getElementById('best');
-
-  let dpr=1,W=0,H=0,state='menu',score=0;
-  let best=parseInt(localStorage.getItem('bola_loca_record')||'0',10);
-  let last=0;
-
-  const paddle={x:0,y:0,w:120,h:18};
-  const ball={x:0,y:0,r:16,vx:220,vy:-300};
-
-  function fit(){
-    dpr=Math.max(1,Math.min(window.devicePixelRatio||1,2));
-    W=window.innerWidth; H=window.innerHeight;
-    canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr);
-    canvas.style.width=W+'px'; canvas.style.height=H+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    paddle.w=Math.max(90,Math.min(160,W*0.32));
-    paddle.h=18;
-    paddle.y=H-70;
-    paddle.x=Math.min(Math.max(paddle.x||W/2,paddle.w/2),W-paddle.w/2);
-  }
-
-  function reset(){
-    fit(); score=0; state='playing';
-    paddle.x=W/2; paddle.y=H-70;
-    ball.r=Math.max(13,Math.min(18,W*0.04));
-    ball.x=W/2; ball.y=H*0.45;
-    ball.vx=(Math.random()<0.5?-1:1)*Math.max(170,W*0.5);
-    ball.vy=-Math.max(260,H*0.38);
-    ui.style.display='none';
-    updateHud();
-  }
-
-  function gameOver(){
-    state='gameover';
-    if(score>best){best=score;localStorage.setItem('bola_loca_record',String(best));}
-    panel.innerHTML='<h1>GAME OVER</h1><p>Puntuación: <b>'+score+'</b></p><p>Récord: <b>'+best+'</b></p><button id="againBtn" type="button">VOLVER A JUGAR</button><div class="small">Toca el botón para reiniciar.</div>';
-    ui.style.display='flex';
-    document.getElementById('againBtn').addEventListener('click',reset,{passive:false});
-    updateHud();
-  }
-
-  function updateHud(){scoreEl.textContent='Puntos: '+score;bestEl.textContent='Récord: '+best;}
-
-  function moveTo(clientX){
-    paddle.x=clientX;
-    if(paddle.x-paddle.w/2<0)paddle.x=paddle.w/2;
-    if(paddle.x+paddle.w/2>W)paddle.x=W-paddle.w/2;
-  }
-
-  function pointer(e){
-    e.preventDefault();
-    const x=(e.touches&&e.touches[0]?e.touches[0].clientX:e.clientX);
-    if(state==='playing') moveTo(x);
-  }
-  canvas.addEventListener('touchstart',pointer,{passive:false});
-  canvas.addEventListener('touchmove',pointer,{passive:false});
-  canvas.addEventListener('mousemove',pointer,{passive:false});
-  canvas.addEventListener('mousedown',pointer,{passive:false});
-  startBtn.addEventListener('click',reset,{passive:false});
-  window.addEventListener('resize',fit);
-  window.addEventListener('orientationchange',()=>setTimeout(fit,250));
-
-  function step(t){
-    requestAnimationFrame(step);
-    const dt=Math.min(0.025,(t-last)/1000||0.016); last=t;
-    if(state==='playing') update(dt);
-    draw();
-  }
-
-  function update(dt){
-    ball.x+=ball.vx*dt; ball.y+=ball.vy*dt;
-    if(ball.x-ball.r<0){ball.x=ball.r;ball.vx=Math.abs(ball.vx)}
-    if(ball.x+ball.r>W){ball.x=W-ball.r;ball.vx=-Math.abs(ball.vx)}
-    if(ball.y-ball.r<0){ball.y=ball.r;ball.vy=Math.abs(ball.vy)}
-
-    const left=paddle.x-paddle.w/2, right=paddle.x+paddle.w/2, top=paddle.y;
-    if(ball.vy>0 && ball.y+ball.r>=top && ball.y-ball.r<=top+paddle.h && ball.x>=left && ball.x<=right){
-      ball.y=top-ball.r;
-      const hit=(ball.x-paddle.x)/(paddle.w/2);
-      ball.vx=hit*Math.max(260,W*0.65);
-      ball.vy=-Math.min(Math.abs(ball.vy)*1.045+12,760);
-      score++; if(score>best)best=score; updateHud();
-    }
-    if(ball.y-ball.r>H) gameOver();
-  }
-
-  function draw(){
-    ctx.clearRect(0,0,W,H);
-    for(let i=0;i<18;i++){
-      ctx.globalAlpha=0.08;
-      ctx.fillStyle='#38bdf8';
-      ctx.beginPath(); ctx.arc((i*97)%W,(i*151)%H,2+(i%4),0,Math.PI*2); ctx.fill();
-    }
-    ctx.globalAlpha=1;
-    ctx.fillStyle='#facc15';
-    roundRect(paddle.x-paddle.w/2,paddle.y,paddle.w,paddle.h,10);
-    ctx.fill();
-    ctx.shadowColor='#22d3ee'; ctx.shadowBlur=18;
-    ctx.fillStyle='#22d3ee';
-    ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2); ctx.fill();
-    ctx.shadowBlur=0;
-    if(state==='menu'){
-      ctx.globalAlpha=.22; ctx.fillStyle='#22d3ee';
-      ctx.beginPath(); ctx.arc(W/2,H*.38,70,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
-    }
-  }
-
-  function roundRect(x,y,w,h,r){
-    ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
-  }
-
-  fit(); updateHud(); requestAnimationFrame(step);
+(() => {
+'use strict';
+const canvas=document.getElementById('game'), ctx=canvas.getContext('2d');
+const overlay=document.getElementById('overlay'), playBtn=document.getElementById('playBtn');
+let W=0,H=0,DPR=1,running=false,gameOver=false,last=0,score=0,coins=0,best=Number(localStorage.getItem('bl_best')||0),level=1;
+const ball={x:0,y:0,r:22,targetX:0,targetY:0};
+let obstacles=[], pickups=[], spawnT=0, coinT=0;
+function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*DPR);canvas.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);if(!running){ball.x=W/2;ball.y=H*.72;ball.targetX=ball.x;ball.targetY=ball.y}}
+addEventListener('resize',resize,{passive:true});resize();
+function reset(){running=true;gameOver=false;overlay.classList.add('hidden');score=0;coins=0;level=1;obstacles=[];pickups=[];spawnT=0;coinT=0;ball.r=Math.max(18,Math.min(28,W*.055));ball.x=W/2;ball.y=H*.74;ball.targetX=ball.x;ball.targetY=ball.y;last=performance.now();requestAnimationFrame(loop)}
+playBtn.addEventListener('click',reset);playBtn.addEventListener('touchend',e=>{e.preventDefault();reset()},{passive:false});
+function setTarget(x,y){if(!running||gameOver)return;ball.targetX=Math.max(ball.r,Math.min(W-ball.r,x));ball.targetY=Math.max(100,Math.min(H-ball.r,y));}
+canvas.addEventListener('pointerdown',e=>{if(gameOver){reset();return} setTarget(e.clientX,e.clientY); canvas.setPointerCapture?.(e.pointerId);});
+canvas.addEventListener('pointermove',e=>setTarget(e.clientX,e.clientY));
+canvas.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+function spawnObstacle(){const size=34+Math.random()*45; obstacles.push({x:Math.random()*(W-size),y:-size,w:size,h:size,vy:145+level*18+Math.random()*75});}
+function spawnCoin(){pickups.push({x:30+Math.random()*(W-60),y:-30,r:13,vy:120+Math.random()*55});}
+function circleRect(c,r){const nx=Math.max(r.x,Math.min(c.x,r.x+r.w)), ny=Math.max(r.y,Math.min(c.y,r.y+r.h)); return Math.hypot(c.x-nx,c.y-ny)<c.r;}
+function update(dt){ball.x+=(ball.targetX-ball.x)*Math.min(1,dt*12);ball.y+=(ball.targetY-ball.y)*Math.min(1,dt*12);score+=dt*10;level=1+Math.floor(score/120);spawnT-=dt;coinT-=dt;if(spawnT<=0){spawnObstacle();spawnT=Math.max(.28,.9-level*.035)} if(coinT<=0){spawnCoin();coinT=1.15+Math.random()*.8} obstacles.forEach(o=>o.y+=o.vy*dt); pickups.forEach(p=>p.y+=p.vy*dt); obstacles=obstacles.filter(o=>o.y<H+80); pickups=pickups.filter(p=>p.y<H+60); for(const o of obstacles){if(circleRect(ball,o)){end();return}} for(let i=pickups.length-1;i>=0;i--){const p=pickups[i];if(Math.hypot(ball.x-p.x,ball.y-p.y)<ball.r+p.r){coins++;score+=25;pickups.splice(i,1)}}}
+function end(){gameOver=true;running=false;best=Math.max(best,Math.floor(score));localStorage.setItem('bl_best',best);overlay.classList.remove('hidden');overlay.querySelector('h1').textContent='Fin de partida';overlay.querySelector('.sub').innerHTML='Puntos: <b>'+Math.floor(score)+'</b> · Monedas: <b>'+coins+'</b><br>Récord: <b>'+best+'</b>';playBtn.textContent='VOLVER A JUGAR';}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.stroke();}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='rgba(255,255,255,.06)';for(let y=120;y<H;y+=80){ctx.fillRect(0,y,W,1)}
+ // HUD
+ const boxes=[['Puntos',Math.floor(score)],['Monedas',coins],['Nivel',level],['Récord',best]]; let x=14; boxes.forEach(b=>{ctx.fillStyle='rgba(12,12,34,.9)';ctx.strokeStyle='rgba(255,255,255,.14)';roundRect(x,24,82,62,14);ctx.fillStyle='#bdb8ff';ctx.font='bold 14px Arial';ctx.fillText(b[0],x+12,48);ctx.fillStyle='white';ctx.font='900 28px Arial';ctx.fillText(b[1],x+12,78);x+=96});
+ // objects
+ pickups.forEach(p=>{ctx.beginPath();ctx.fillStyle='#ffd84d';ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#9a6b00';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText('$',p.x,p.y+5);ctx.textAlign='left'});
+ obstacles.forEach(o=>{ctx.fillStyle='#ff365e';ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=2;roundRect(o.x,o.y,o.w,o.h,10)});
+ const g=ctx.createRadialGradient(ball.x-8,ball.y-10,2,ball.x,ball.y,ball.r*1.8);g.addColorStop(0,'#fff');g.addColorStop(.25,'#19efff');g.addColorStop(1,'#7b2cff');ctx.beginPath();ctx.fillStyle=g;ctx.shadowColor='#19efff';ctx.shadowBlur=24;ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+ if(running){ctx.fillStyle='rgba(255,255,255,.72)';ctx.font='bold 16px Arial';ctx.textAlign='center';ctx.fillText('Arrastra la bola',W/2,H-32);ctx.textAlign='left';}
+}
+function loop(t){if(!running&&!gameOver){draw();return} const dt=Math.min(.033,(t-last)/1000||0);last=t;if(running)update(dt);draw();if(running)requestAnimationFrame(loop)}
+draw();
 })();
 </script>
 </body>
