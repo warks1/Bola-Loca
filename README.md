@@ -1,3 +1,4 @@
-# Bola Loca v0.3
+# Bola Loca v0.4
+Versión jugable más completa: objetos aleatorios, monedas, meteoritos multiplicadores aleatorios, destello, partículas, niveles, pausa, misiones y guardado local.
 
-Obstáculos convertidos en objetos aleatorios: rocas, pinchos, minas, cajas, asteroides y cristales. Meteoritos de multiplicador con destello incluidos.
+Para GitHub Pages sube `index.html`.

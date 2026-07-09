@@ -1,164 +1,90 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Bola Loca v0.3 Objetos Aleatorios</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Bola Loca v0.4</title>
 <style>
-html,body{margin:0;padding:0;overflow:hidden;background:#050816;font-family:Arial,Helvetica,sans-serif;touch-action:none;color:white}canvas{display:block;width:100vw;height:100vh;background:radial-gradient(circle at top,#1b2a5a 0%,#081023 45%,#02040b 100%)}
+:root{--bg:#08111f;--panel:rgba(8,16,32,.78);--cyan:#21e6ff;--gold:#ffd84d;--red:#ff4b5f;--green:#63ff8b;--purple:#b66cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} html,body{margin:0;height:100%;overflow:hidden;background:#050914;font-family:Arial,Helvetica,sans-serif;color:#fff;touch-action:none} canvas{display:block;width:100vw;height:100vh;background:radial-gradient(circle at 50% 20%,#18325f,#07101f 55%,#030611)}
+#ui{position:fixed;inset:0;pointer-events:none}.hud{position:absolute;top:env(safe-area-inset-top,0);left:0;right:0;padding:12px;display:flex;gap:8px;justify-content:space-between;align-items:flex-start}.box{background:var(--panel);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:8px 10px;box-shadow:0 8px 22px rgba(0,0,0,.25);font-weight:800;font-size:14px;min-width:70px;text-align:center}.box small{display:block;color:#aab7cf;font-size:10px;font-weight:700}.center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;background:linear-gradient(rgba(2,6,18,.3),rgba(2,6,18,.65));pointer-events:auto}.title{font-size:46px;font-weight:1000;letter-spacing:1px;color:var(--cyan);text-shadow:0 0 22px rgba(33,230,255,.8);margin:0 0 8px}.subtitle{color:#dbe7ff;margin:0 0 22px;font-weight:700}.btn{border:0;border-radius:18px;padding:16px 26px;margin:7px;background:linear-gradient(135deg,#22d3ee,#2563eb);color:#fff;font-size:18px;font-weight:1000;box-shadow:0 12px 28px rgba(34,211,238,.28);min-width:190px}.btn.alt{background:linear-gradient(135deg,#374151,#111827)}.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:420px}.panel{background:rgba(8,16,32,.85);border:1px solid rgba(255,255,255,.15);border-radius:22px;padding:18px;max-width:420px;width:min(92vw,420px)}.hidden{display:none!important}.toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:20px;padding:12px 18px;font-weight:1000;font-size:22px;text-shadow:0 0 14px #fff;opacity:0;transition:.25s}.toast.show{opacity:1}.controls{position:absolute;bottom:calc(env(safe-area-inset-bottom,0) + 10px);left:0;right:0;text-align:center;color:#9fb0cc;font-size:12px;font-weight:800}.pauseBtn{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0) + 82px);pointer-events:auto;background:rgba(255,255,255,.12);color:white;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px 12px;font-weight:1000}
 </style>
 </head>
 <body>
-<canvas id="game"></canvas>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div class="hud hidden" id="hud">
+    <div class="box"><small>PUNTOS</small><span id="score">0</span></div>
+    <div class="box"><small>MONEDAS</small><span id="coins">0</span></div>
+    <div class="box"><small>MULTI</small><span id="multi">x1</span></div>
+    <div class="box"><small>NIVEL</small><span id="level">1</span></div>
+    <div class="box"><small>RÉCORD</small><span id="best">0</span></div>
+  </div>
+  <button id="pause" class="pauseBtn hidden">PAUSA</button>
+  <div id="menu" class="center">
+    <h1 class="title">BOLA LOCA</h1>
+    <p class="subtitle">v0.4 · Objetos aleatorios · Meteoritos · Misiones</p>
+    <div class="panel">
+      <button class="btn" id="play">JUGAR</button>
+      <div class="row">
+        <button class="btn alt" id="how">CÓMO JUGAR</button>
+        <button class="btn alt" id="missions">MISIONES</button>
+      </div>
+      <p style="color:#aab7cf;font-weight:700">Arrastra la bola, recoge monedas y meteoritos. Evita los objetos.</p>
+    </div>
+  </div>
+  <div id="over" class="center hidden"><div class="panel"><h1 class="title" style="color:#ff4b5f">GAME OVER</h1><p id="final" class="subtitle"></p><button class="btn" id="again">REINTENTAR</button><button class="btn alt" id="home">MENÚ</button></div></div>
+  <div id="info" class="center hidden"><div class="panel"><h2>Cómo jugar</h2><p>Arrastra la bola azul con el dedo. Las monedas suman puntos. Los meteoritos activan multiplicadores aleatorios. Evita pinchos, rocas, satélites, láseres, minas y portales rojos.</p><button class="btn" id="back">VOLVER</button></div></div>
+  <div id="missionPanel" class="center hidden"><div class="panel"><h2>Misiones</h2><p id="missionText"></p><button class="btn" id="back2">VOLVER</button></div></div>
+  <div id="toast" class="toast">x2</div>
+  <div class="controls" id="controls">Mueve la bola con el dedo · Pulsa PAUSA para parar</div>
+</div>
 <script>
-const canvas=document.getElementById('game');
-const ctx=canvas.getContext('2d');
-let W=0,H=0,DPR=1;
-function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0)}
-addEventListener('resize',resize);resize();
-
-let state='menu';
-let score=0,coins=0,best=Number(localStorage.getItem('bola_best')||0);
-let multiplier=1,multiplierTimer=0;
-let t=0,spawnObs=0,spawnCoin=0,spawnMeteor=0,shake=0,flash=0;
-let particles=[];
-const player={x:W/2,y:H*0.78,r:24,vx:0,vy:0};
-const obstacles=[], coinItems=[], meteors=[];
-
-function reset(){
- state='play';score=0;coins=0;multiplier=1;multiplierTimer=0;t=0;spawnObs=0;spawnCoin=0;spawnMeteor=0;shake=0;flash=0;
- obstacles.length=0;coinItems.length=0;meteors.length=0;particles.length=0;
- player.x=W/2;player.y=H*0.78;player.vx=0;player.vy=0;
-}
-function rnd(a,b){return Math.random()*(b-a)+a}
-function dist(a,b,c,d){return Math.hypot(a-c,b-d)}
-function addParticles(x,y,color,n=24,power=4){for(let i=0;i<n;i++){particles.push({x,y,vx:rnd(-power,power),vy:rnd(-power,power),life:rnd(25,55),max:55,r:rnd(2,5),color})}}
-function spawnObstacle(){
- const types=['rock','spike','mine','crate','asteroid','crystal'];
- const type=types[Math.floor(Math.random()*types.length)];
- const size=rnd(28,54);
- obstacles.push({
-  type,
-  x:rnd(45,W-45),
-  y:-60,
-  w:type==='spike'?size*1.35:size,
-  h:type==='spike'?size*1.05:size,
-  r:size/2,
-  vy:rnd(2.2,4.4)+t*0.002,
-  rot:rnd(0,Math.PI*2),
-  spin:rnd(-0.045,0.045),
-  verts:Array.from({length:9},()=>rnd(.65,1.05))
- })
-}
-function spawnCoinItem(){coinItems.push({x:rnd(30,W-30),y:-30,r:12,vy:rnd(2.5,4.3),rot:0})}
-function randomMultiplier(){const values=[2,2,2,3,3,5,5,10];return values[Math.floor(Math.random()*values.length)]}
-function spawnMeteor(){meteors.push({x:rnd(35,W-35),y:-40,r:rnd(18,24),vy:rnd(2.4,3.8),rot:rnd(0,6.28),spin:rnd(-0.04,0.04),mul:randomMultiplier()})}
-
-function pointer(x,y){ if(state==='menu'||state==='over'){reset();return} player.x=x; player.y=y; }
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();pointer(e.clientX,e.clientY)});
-canvas.addEventListener('pointermove',e=>{e.preventDefault();if(state==='play'){player.x=e.clientX;player.y=e.clientY}}, {passive:false});
-
-function update(){
- t++;
- if(state!=='play') return;
- score += 0.08*multiplier;
- if(score>best){best=Math.floor(score);localStorage.setItem('bola_best',best)}
- if(multiplierTimer>0){multiplierTimer--; if(multiplierTimer<=0) multiplier=1;}
- spawnObs--;spawnCoin--;spawnMeteor--;
- if(spawnObs<=0){spawnObstacle();spawnObs=Math.max(24,70-t*0.01)}
- if(spawnCoin<=0){spawnCoinItem();spawnCoin=rnd(45,90)}
- if(spawnMeteor<=0){spawnMeteor();spawnMeteor=rnd(160,260)}
- for(const o of obstacles){o.y+=o.vy;o.rot+=o.spin;}
- for(const c of coinItems){c.y+=c.vy;c.rot+=0.08}
- for(const m of meteors){m.y+=m.vy;m.rot+=m.spin}
- for(let i=obstacles.length-1;i>=0;i--){
- const o=obstacles[i];
- if(o.y>H+90){obstacles.splice(i,1);continue}
- const hitRadius=o.type==='spike'?Math.max(o.w,o.h)*0.45:o.r*0.95;
- if(dist(player.x,player.y,o.x,o.y)<player.r+hitRadius){
-  state='over';shake=14;addParticles(player.x,player.y,'#ff4d4d',45,7)
- }
-}
- for(let i=coinItems.length-1;i>=0;i--){const c=coinItems[i]; if(c.y>H+50)coinItems.splice(i,1); else if(dist(player.x,player.y,c.x,c.y)<player.r+c.r){coins++;score+=10*multiplier;addParticles(c.x,c.y,'#ffd84a',14,3);coinItems.splice(i,1)}}
- for(let i=meteors.length-1;i>=0;i--){const m=meteors[i]; if(m.y>H+60)meteors.splice(i,1); else if(dist(player.x,player.y,m.x,m.y)<player.r+m.r){multiplier=m.mul;multiplierTimer=420;score+=25*m.mul;flash=1;shake=8;addParticles(m.x,m.y,'#9cf6ff',55,8);addParticles(m.x,m.y,'#ffffff',28,10);meteors.splice(i,1)}}
- for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.03;p.life--;if(p.life<=0)particles.splice(i,1)}
- if(shake>0)shake*=0.85; if(flash>0)flash-=0.035;
-}
-
-
-function drawObstacle(o){
- ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rot);
- if(o.type==='rock'){
-  ctx.fillStyle='#6b7280';ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;ctx.beginPath();
-  ctx.moveTo(-o.r*.9,-o.r*.25);ctx.lineTo(-o.r*.35,-o.r*.9);ctx.lineTo(o.r*.55,-o.r*.72);ctx.lineTo(o.r*.95,-o.r*.05);ctx.lineTo(o.r*.62,o.r*.75);ctx.lineTo(-o.r*.22,o.r*.95);ctx.lineTo(-o.r*.86,o.r*.45);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='#9ca3af';ctx.beginPath();ctx.arc(-o.r*.2,-o.r*.18,4,0,Math.PI*2);ctx.arc(o.r*.35,o.r*.24,5,0,Math.PI*2);ctx.fill();
- }
- else if(o.type==='spike'){
-  ctx.fillStyle='#ef4444';ctx.strokeStyle='#fecaca';ctx.lineWidth=2;ctx.beginPath();
-  ctx.moveTo(0,-o.h*.62);ctx.lineTo(o.w*.52,o.h*.45);ctx.lineTo(0,o.h*.22);ctx.lineTo(-o.w*.52,o.h*.45);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='#fff';ctx.globalAlpha=.35;ctx.beginPath();ctx.moveTo(0,-o.h*.42);ctx.lineTo(o.w*.18,o.h*.18);ctx.lineTo(0,o.h*.08);ctx.closePath();ctx.fill();ctx.globalAlpha=1;
- }
- else if(o.type==='mine'){
-  ctx.fillStyle='#111827';ctx.strokeStyle='#fb7185';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,o.r,0,Math.PI*2);ctx.fill();ctx.stroke();
-  ctx.strokeStyle='#fb7185';ctx.lineWidth=4;for(let a=0;a<Math.PI*2;a+=Math.PI/4){ctx.beginPath();ctx.moveTo(Math.cos(a)*o.r*.75,Math.sin(a)*o.r*.75);ctx.lineTo(Math.cos(a)*o.r*1.28,Math.sin(a)*o.r*1.28);ctx.stroke()}
-  ctx.fillStyle='#fb7185';ctx.beginPath();ctx.arc(0,0,o.r*.33,0,Math.PI*2);ctx.fill();
- }
- else if(o.type==='crate'){
-  ctx.fillStyle='#92400e';ctx.strokeStyle='#fed7aa';ctx.lineWidth=3;ctx.fillRect(-o.r,-o.r,o.r*2,o.r*2);ctx.strokeRect(-o.r,-o.r,o.r*2,o.r*2);
-  ctx.strokeStyle='#f59e0b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-o.r,-o.r);ctx.lineTo(o.r,o.r);ctx.moveTo(o.r,-o.r);ctx.lineTo(-o.r,o.r);ctx.stroke();
- }
- else if(o.type==='asteroid'){
-  ctx.fillStyle='#7f1d1d';ctx.strokeStyle='#fca5a5';ctx.lineWidth=2;ctx.beginPath();
-  for(let i=0;i<9;i++){let a=i*Math.PI*2/9;let rr=o.r*(o.verts?o.verts[i]:.85);let x=Math.cos(a)*rr,y=Math.sin(a)*rr;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='#fb923c';ctx.beginPath();ctx.arc(-o.r*.25,0,5,0,Math.PI*2);ctx.arc(o.r*.25,-o.r*.25,4,0,Math.PI*2);ctx.fill();
- }
- else if(o.type==='crystal'){
-  ctx.fillStyle='#a855f7';ctx.strokeStyle='#e9d5ff';ctx.lineWidth=2;ctx.beginPath();
-  ctx.moveTo(0,-o.r*1.15);ctx.lineTo(o.r*.72,-o.r*.25);ctx.lineTo(o.r*.45,o.r*.95);ctx.lineTo(-o.r*.48,o.r*.95);ctx.lineTo(-o.r*.72,-o.r*.25);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.moveTo(0,-o.r*.8);ctx.lineTo(o.r*.22,-o.r*.2);ctx.lineTo(0,o.r*.55);ctx.closePath();ctx.fill();
- }
- ctx.restore();
-}
-
-function drawMeteor(m){
- ctx.save();ctx.translate(m.x,m.y);ctx.rotate(m.rot);
- // cola luminosa
- const g=ctx.createLinearGradient(-45,-10,15,5);g.addColorStop(0,'rgba(255,120,30,0)');g.addColorStop(0.45,'rgba(255,118,35,0.55)');g.addColorStop(1,'rgba(255,235,120,0.9)');
- ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(-55,-16);ctx.lineTo(-8,-8);ctx.lineTo(-5,12);ctx.lineTo(-58,20);ctx.closePath();ctx.fill();
- // roca irregular
- ctx.fillStyle='#8b5a3c';ctx.strokeStyle='#ffb45c';ctx.lineWidth=2;
- ctx.beginPath();
- ctx.moveTo(-m.r*0.8,-m.r*0.35);ctx.lineTo(-m.r*0.25,-m.r*0.9);ctx.lineTo(m.r*0.65,-m.r*0.62);ctx.lineTo(m.r*0.9,0);ctx.lineTo(m.r*0.45,m.r*0.75);ctx.lineTo(-m.r*0.45,m.r*0.85);ctx.lineTo(-m.r*0.95,m.r*0.2);ctx.closePath();ctx.fill();ctx.stroke();
- ctx.fillStyle='#c47a47';ctx.beginPath();ctx.arc(-m.r*.2,-m.r*.15,4,0,Math.PI*2);ctx.arc(m.r*.35,m.r*.2,5,0,Math.PI*2);ctx.fill();
- ctx.fillStyle='white';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('x?',0,1);
- ctx.restore();
-}
-function draw(){
- ctx.save();
- if(shake>0)ctx.translate(rnd(-shake,shake),rnd(-shake,shake));
- ctx.clearRect(-20,-20,W+40,H+40);
- // fondo estrellas
- ctx.fillStyle='rgba(255,255,255,.45)'; for(let i=0;i<45;i++){let x=(i*73+t*.15)%W,y=(i*113)%H;ctx.fillRect(x,y,2,2)}
- // objetos
- for(const o of obstacles)drawObstacle(o);
- for(const c of coinItems){ctx.save();ctx.translate(c.x,c.y);ctx.rotate(c.rot);ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(0,0,c.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff7aa';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#8a5a00';ctx.font='bold 13px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('$',0,1);ctx.restore()}
- for(const m of meteors)drawMeteor(m);
- // bola
- const bg=ctx.createRadialGradient(player.x-8,player.y-10,4,player.x,player.y,player.r);bg.addColorStop(0,'#dff9ff');bg.addColorStop(.35,'#38bdf8');bg.addColorStop(1,'#075985');ctx.fillStyle=bg;ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=3;ctx.stroke();
- for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1}
- ctx.restore();
- // flash
- if(flash>0){ctx.fillStyle=`rgba(255,255,255,${flash*.55})`;ctx.fillRect(0,0,W,H);ctx.strokeStyle=`rgba(130,230,255,${flash})`;ctx.lineWidth=8;ctx.beginPath();ctx.arc(player.x,player.y,80*(1.05-flash)+20,0,Math.PI*2);ctx.stroke();}
- // HUD
- ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,92);
- ctx.fillStyle='white';ctx.font='bold 18px Arial';ctx.textAlign='left';ctx.fillText('Puntos: '+Math.floor(score),16,28);ctx.fillText('Monedas: '+coins,16,56);ctx.fillText('Récord: '+best,16,82);
- ctx.textAlign='right';ctx.fillStyle=multiplier>1?'#67e8f9':'white';ctx.fillText('Multiplicador: x'+multiplier, W-16,28); if(multiplier>1){ctx.fillStyle='#d1fae5';ctx.fillText('Tiempo: '+Math.ceil(multiplierTimer/60)+'s',W-16,56)}
- if(state==='menu'){overlay('BOLA LOCA','JUGAR','Mueve la bola con el dedo. Coge meteoritos para multiplicadores aleatorios.');}
- if(state==='over'){overlay('GAME OVER','TOCA PARA REINICIAR','Puntos: '+Math.floor(score)+'  |  Monedas: '+coins);}
-}
-function overlay(title,button,sub){ctx.fillStyle='rgba(0,0,0,.62)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#67e8f9';ctx.font='bold 48px Arial';ctx.fillText(title,W/2,H*.34);ctx.fillStyle='white';ctx.font='20px Arial';ctx.fillText(sub,W/2,H*.43);ctx.fillStyle='#22c55e';roundRect(W/2-110,H*.52,220,66,18);ctx.fill();ctx.fillStyle='white';ctx.font='bold 27px Arial';ctx.fillText(button,W/2,H*.52+43)}
-function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
-function loop(){update();draw();requestAnimationFrame(loop)}loop();
+'use strict';
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let W=0,H=0,DPR=1;
+const $=id=>document.getElementById(id); const ui={menu:$('menu'),over:$('over'),hud:$('hud'),score:$('score'),coins:$('coins'),multi:$('multi'),level:$('level'),best:$('best'),toast:$('toast'),pause:$('pause'),info:$('info'),missionPanel:$('missionPanel'),missionText:$('missionText')};
+let state='menu', t=0, last=0, spawn=0, coinSpawn=0, meteorSpawn=0, levelTimer=0, shake=0, flash=0;
+let best=Number(localStorage.getItem('bl_best')||0), totalCoins=Number(localStorage.getItem('bl_coins')||0);
+let score=0, coins=0, level=1, multiplier=1, multiTime=0, lives=1;
+let objects=[], pickups=[], particles=[], stars=[];
+let mission={coins:10, meteors:2, dodged:20};
+const ball={x:0,y:0,r:18,vx:0,vy:0,targetX:0,targetY:0,trail:[]};
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);if(state==='menu'){ball.x=W/2;ball.y=H*.62;} } addEventListener('resize',resize); resize();
+for(let i=0;i<80;i++) stars.push({x:Math.random()*W,y:Math.random()*H,s:Math.random()*2+0.3,v:Math.random()*0.5+0.1});
+function rand(a,b){return a+Math.random()*(b-a)} function choice(a){return a[Math.floor(Math.random()*a.length)]}
+function start(){score=0;coins=0;level=1;multiplier=1;multiTime=0;lives=1;objects=[];pickups=[];particles=[];spawn=0;coinSpawn=0;meteorSpawn=1200;levelTimer=0;ball.x=W/2;ball.y=H*.74;ball.targetX=ball.x;ball.targetY=ball.y;ball.trail=[];state='play';ui.menu.classList.add('hidden');ui.over.classList.add('hidden');ui.hud.classList.remove('hidden');ui.pause.classList.remove('hidden');updateHud();toast('¡A JUGAR!');}
+function gameOver(){state='over';best=Math.max(best,Math.floor(score));localStorage.setItem('bl_best',best);totalCoins+=coins;localStorage.setItem('bl_coins',totalCoins);ui.final.textContent=`Puntos: ${Math.floor(score)} · Monedas: ${coins} · Nivel: ${level}`;ui.over.classList.remove('hidden');ui.hud.classList.add('hidden');ui.pause.classList.add('hidden');}
+function updateHud(){ui.score.textContent=Math.floor(score);ui.coins.textContent=coins;ui.multi.textContent='x'+multiplier;ui.level.textContent=level;ui.best.textContent=best;}
+function toast(txt){ui.toast.textContent=txt;ui.toast.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>ui.toast.classList.remove('show'),900)}
+function spawnObject(){const type=choice(['rock','spike','satellite','mine','laser','portal','comet']);const size=rand(24,54)+level*1.2;const x=rand(size,W-size);const y=-size;const speed=rand(2.2,4.2)+level*.28;objects.push({type,x,y,w:size,h:size,r:size*.5,rot:rand(0,Math.PI*2),vr:rand(-.06,.06),speed,hp:1,passed:false,phase:rand(0,6)});}
+function spawnCoin(){const r=12;pickups.push({kind:'coin',x:rand(25,W-25),y:-20,r,value:1,speed:rand(2.2,3.8)+level*.15,rot:0});}
+function spawnMeteor(){const values=[2,2,2,3,3,5,5,10,20];const value=choice(values);pickups.push({kind:'meteor',x:rand(30,W-30),y:-35,r:18,value,speed:rand(2.4,4.3)+level*.18,rot:rand(0,6),vr:rand(-.05,.05)});}
+function burst(x,y,color,n=22,power=5){for(let i=0;i<n;i++){const a=rand(0,Math.PI*2),s=rand(1,power);particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(25,55),max:55,r:rand(2,5),color});}}
+function collideCircle(a,b){const dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy < (a.r+b.r)*(a.r+b.r)}
+function update(dt){t+=dt;if(state!=='play')return;score += dt*0.008*multiplier;levelTimer+=dt;if(levelTimer>9000){levelTimer=0;level++;toast('NIVEL '+level)}
+if(multiTime>0){multiTime-=dt;if(multiTime<=0){multiplier=1;toast('x1')}}
+spawn-=dt;coinSpawn-=dt;meteorSpawn-=dt;if(spawn<=0){spawnObject();spawn=rand(520,900)-Math.min(level*24,310)} if(coinSpawn<=0){spawnCoin();coinSpawn=rand(650,1050)} if(meteorSpawn<=0){spawnMeteor();meteorSpawn=rand(3200,6200)}
+ball.x += (ball.targetX-ball.x)*0.22; ball.y += (ball.targetY-ball.y)*0.22; ball.x=Math.max(ball.r,Math.min(W-ball.r,ball.x));ball.y=Math.max(92,Math.min(H-ball.r-18,ball.y)); ball.trail.push({x:ball.x,y:ball.y}); if(ball.trail.length>10)ball.trail.shift();
+for(const o of objects){o.y+=o.speed; o.rot+=o.vr; o.phase+=dt*.006; if(o.type==='satellite')o.x+=Math.sin(o.phase)*1.8; if(o.type==='laser')o.x+=Math.sin(o.phase)*3.0; if(o.y>H+80&&!o.passed){o.passed=true;mission.dodged--}}
+objects=objects.filter(o=>o.y<H+100);
+for(const p of pickups){p.y+=p.speed;p.rot+=p.vr||0} pickups=pickups.filter(p=>p.y<H+80);
+for(const p of pickups){if(collideCircle(ball,p)){if(p.kind==='coin'){coins+=p.value;score+=10*multiplier;burst(p.x,p.y,'#ffd84d',14,4);toast('+ moneda');mission.coins--}else{multiplier=p.value;multiTime=7000;score+=25*p.value;flash=1;shake=8;burst(p.x,p.y,'#b66cff',40,8);toast('METEORITO x'+p.value);mission.meteors--}p.dead=true;updateHud()}}
+pickups=pickups.filter(p=>!p.dead);
+for(const o of objects){const rr=o.type==='laser'?Math.max(o.w,o.h)*.42:o.r;if(collideCircle(ball,{x:o.x,y:o.y,r:rr})){burst(ball.x,ball.y,'#ff4b5f',45,9);shake=14;gameOver();break}}
+for(const pa of particles){pa.x+=pa.vx;pa.y+=pa.vy;pa.vx*=.98;pa.vy*=.98;pa.life--} particles=particles.filter(p=>p.life>0); if(shake>0)shake*=.86; if(flash>0)flash*=.88; updateHud();}
+function drawMeteor(p){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.shadowColor='#b66cff';ctx.shadowBlur=18;ctx.fillStyle=p.value>=10?'#ffd84d':p.value>=5?'#b66cff':'#8b5e3c';ctx.beginPath();ctx.moveTo(-18,-6);ctx.lineTo(-8,-18);ctx.lineTo(12,-14);ctx.lineTo(20,2);ctx.lineTo(8,18);ctx.lineTo(-15,13);ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(-5,-4,4,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 13px Arial';ctx.textAlign='center';ctx.fillText('?',2,5);ctx.restore();}
+function drawObstacle(o){ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rot);ctx.shadowBlur=10;ctx.shadowColor='#ff4b5f'; if(o.type==='rock'){ctx.fillStyle='#7f8a9b';ctx.beginPath();for(let i=0;i<8;i++){let a=i/8*Math.PI*2,rr=o.r*rand(.75,1.05);ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}ctx.closePath();ctx.fill()} else if(o.type==='spike'){ctx.fillStyle='#ff4b5f';ctx.beginPath();for(let i=0;i<10;i++){let a=i/10*Math.PI*2,rr=i%2?o.r*.45:o.r;ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}ctx.closePath();ctx.fill()} else if(o.type==='satellite'){ctx.fillStyle='#cbd5e1';ctx.fillRect(-o.r*.45,-o.r*.3,o.r*.9,o.r*.6);ctx.fillStyle='#38bdf8';ctx.fillRect(-o.r*1.2,-o.r*.18,o.r*.65,o.r*.36);ctx.fillRect(o.r*.55,-o.r*.18,o.r*.65,o.r*.36)} else if(o.type==='mine'){ctx.fillStyle='#111827';ctx.beginPath();ctx.arc(0,0,o.r*.72,0,7);ctx.fill();ctx.strokeStyle='#ff4b5f';ctx.lineWidth=4;for(let i=0;i<8;i++){let a=i/8*Math.PI*2;ctx.beginPath();ctx.moveTo(Math.cos(a)*o.r*.55,Math.sin(a)*o.r*.55);ctx.lineTo(Math.cos(a)*o.r,Math.sin(a)*o.r);ctx.stroke()}} else if(o.type==='laser'){ctx.fillStyle='#ff284a';ctx.fillRect(-o.r*.2,-o.r,o.r*.4,o.r*2);ctx.fillStyle='rgba(255,255,255,.65)';ctx.fillRect(-o.r*.07,-o.r,o.r*.14,o.r*2)} else if(o.type==='portal'){ctx.strokeStyle='#ff4b5f';ctx.lineWidth=6;ctx.beginPath();ctx.ellipse(0,0,o.r*.8,o.r*.45,0,0,7);ctx.stroke();ctx.strokeStyle='#ffd84d';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,o.r*.45,o.r*.25,0,0,7);ctx.stroke()} else {ctx.fillStyle='#fb7185';ctx.beginPath();ctx.moveTo(-o.r,0);ctx.quadraticCurveTo(0,-o.r*.75,o.r,0);ctx.quadraticCurveTo(0,o.r*.75,-o.r,0);ctx.fill();} ctx.restore();}
+function render(){ctx.save();let sx=shake?rand(-shake,shake):0,sy=shake?rand(-shake,shake):0;ctx.translate(sx,sy);ctx.clearRect(-20,-20,W+40,H+40);let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#142b55');g.addColorStop(.55,'#08111f');g.addColorStop(1,'#030611');ctx.fillStyle=g;ctx.fillRect(-20,-20,W+40,H+40);
+for(const s of stars){s.y+=s.v;if(s.y>H){s.y=0;s.x=Math.random()*W}ctx.globalAlpha=.35;ctx.fillStyle='#fff';ctx.fillRect(s.x,s.y,s.s,s.s)}ctx.globalAlpha=1;
+for(const p of pickups){if(p.kind==='coin'){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.shadowColor='#ffd84d';ctx.shadowBlur=12;ctx.fillStyle='#ffd84d';ctx.beginPath();ctx.arc(0,0,p.r,0,7);ctx.fill();ctx.fillStyle='#9a6500';ctx.font='900 13px Arial';ctx.textAlign='center';ctx.fillText('$',0,5);ctx.restore()}else drawMeteor(p)}
+for(const o of objects) drawObstacle(o);
+for(let i=0;i<ball.trail.length;i++){const tr=ball.trail[i];ctx.globalAlpha=i/ball.trail.length*.35;ctx.fillStyle='#21e6ff';ctx.beginPath();ctx.arc(tr.x,tr.y,ball.r*(i/ball.trail.length),0,7);ctx.fill()}ctx.globalAlpha=1;ctx.shadowColor='#21e6ff';ctx.shadowBlur=22;ctx.fillStyle='#22d3ee';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,7);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.65)';ctx.beginPath();ctx.arc(ball.x-6,ball.y-7,5,0,7);ctx.fill();
+for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}ctx.globalAlpha=1;if(flash>.02){ctx.fillStyle=`rgba(255,255,255,${flash*.35})`;ctx.fillRect(-20,-20,W+40,H+40)}ctx.restore();requestAnimationFrame(loop)}
+function loop(ts){const dt=Math.min(33,ts-last||16);last=ts;update(dt);render()}
+function setTarget(e){const x=e.touches?e.touches[0].clientX:e.clientX, y=e.touches?e.touches[0].clientY:e.clientY;ball.targetX=x;ball.targetY=y}
+canvas.addEventListener('touchstart',e=>{e.preventDefault();if(state==='play')setTarget(e)},{passive:false});canvas.addEventListener('touchmove',e=>{e.preventDefault();if(state==='play')setTarget(e)},{passive:false});canvas.addEventListener('mousedown',e=>{if(state==='play')setTarget(e)});canvas.addEventListener('mousemove',e=>{if(state==='play'&&e.buttons)setTarget(e)});
+$('play').onclick=start;$('again').onclick=start;$('home').onclick=()=>{state='menu';ui.over.classList.add('hidden');ui.menu.classList.remove('hidden')};$('how').onclick=()=>{ui.menu.classList.add('hidden');ui.info.classList.remove('hidden')};$('back').onclick=()=>{ui.info.classList.add('hidden');ui.menu.classList.remove('hidden')};$('missions').onclick=()=>{ui.missionText.innerHTML=`Recoge ${Math.max(0,mission.coins)} monedas<br>Consigue ${Math.max(0,mission.meteors)} meteoritos<br>Esquiva ${Math.max(0,mission.dodged)} objetos`;ui.menu.classList.add('hidden');ui.missionPanel.classList.remove('hidden')};$('back2').onclick=()=>{ui.missionPanel.classList.add('hidden');ui.menu.classList.remove('hidden')};ui.pause.onclick=()=>{if(state==='play'){state='pause';ui.pause.textContent='SEGUIR';toast('PAUSA')}else if(state==='pause'){state='play';ui.pause.textContent='PAUSA';toast('SEGUIR')}};
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
