@@ -1,14 +1,17 @@
-# Crazy Ball v8 Infinity
+# Crazy Ball v8.1 Premium Alive
 
-Evolución de Crazy Ball v7.1 con emblemas originales dentro de todas las bolas, recompensas diarias, colección de skins, eventos sorpresa, mejoras visuales y personalidad por categorías.
+Versión basada en Crazy Ball v8 Infinity.
 
-## Novedades
-- Emblema propio dentro de cada skin.
-- Símbolos claros en todas las esferas de ventajas.
-- Premio diario de 7 días.
-- Eventos: lluvia de monedas, tormenta de ventajas y flujo lento.
-- Tienda y colección rediseñadas.
-- Bola del menú muestra la skin equipada.
-- Efectos de partículas adaptados a la skin.
+## Mejoras principales
+- Fondos vivos con auroras, lluvia de meteoritos, rayos y naves lejanas.
+- Cámara con vibración en impactos y eventos.
+- Reflejos y sombras dinámicas en bola, obstáculos y ventajas.
+- Cada familia de skins tiene estela, sonido, explosión y animación propias.
+- Emblema visible dentro de cada bola.
+- Iconos claros en ventajas, monedas, turbo, vida y cajas sorpresa.
+- Menú con cristal translúcido, transiciones y animaciones sincronizadas.
+- Premio diario, cofre diario, ruleta y desafíos.
+- Eventos sorpresa: gravedad reducida, controles invertidos, portal dimensional y meteorito gigante.
+- Mantiene ranking, chat, niveles, prestigio, misiones, jefes, logros y modos.
 
-Los emblemas deportivos, heroicos y de criaturas son diseños genéricos y originales; no se incluyen marcas, escudos ni personajes oficiales.
+Abre `index.html` o publica la carpeta completa en GitHub Pages.

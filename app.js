@@ -307,3 +307,96 @@ const v8BurstBase=burst;burst=function(x,y,color,n=12,speed=5){const s=skins.fin
 
 openHow=function(){modalContent.innerHTML='<h2>CÓMO JUGAR · V8</h2><p>Cada bola tiene un emblema propio que representa su skin. Las esferas de ventajas también muestran su función: imán, escudo, turbo, congelación, fantasma y multiplicadores. Recoge premios diarios, completa logros, supera jefes y aprovecha eventos sorpresa como lluvia de monedas y tormenta de ventajas.</p>';openModal()};
 document.querySelector('#howBtn').onclick=openHow;
+
+// ===== CRAZY BALL v8.1 PREMIUM ALIVE =====
+const V81_SKIN_FX={
+ Originales:{trail:'orb',sound:520,burst:'ring'},Fútbol:{trail:'stripes',sound:392,burst:'stars'},Héroes:{trail:'lightning',sound:659,burst:'rays'},Criaturas:{trail:'spark',sound:587,burst:'petals'},Especiales:{trail:'rainbow',sound:784,burst:'nova'}
+};
+let v81Weather={aurora:0,lightning:0,shipX:-200,meteorT:0},v81Invert=0,v81LowGravity=0,v81GiantMeteor=null,v81PortalHue=0,v81LastCoinCount=0,v81SpawnGlow=0;
+function v81Skin(){return skins.find(s=>s.id===selectedSkin)||skins[0]}
+function v81Fx(){return V81_SKIN_FX[v81Skin().cat]||V81_SKIN_FX.Originales}
+function v81Tone(freq,dur=.12,vol=.045,type='sine'){
+ try{if(!musicEnabled)return;ensureAudio(false).then(()=>{if(!audioCtx||audioCtx.state!=='running')return;const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.setValueAtTime(freq,audioCtx.currentTime);g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(vol,audioCtx.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);o.connect(g).connect(masterGain);o.start();o.stop(audioCtx.currentTime+dur+.02)}).catch(()=>{})}catch(e){}
+}
+function v81SkinBurst(x,y,intensity=1){const s=v81Skin(),fx=v81Fx();const count=fx.burst==='nova'?42:fx.burst==='rays'?30:24;v8BurstBase(x,y,s.c2,count*intensity,fx.burst==='nova'?9:6);v81Tone(fx.sound,intensity>.9?.16:.09,intensity>.9?.055:.03,fx.burst==='rays'?'sawtooth':'sine')}
+
+// Sonido, explosión y animación propios por familia de skin.
+const v81ActivateBase=activate;
+activate=function(type,value=1){v81ActivateBase(type,value);v81SkinBurst(ball.x,ball.y,1.15);v81SpawnGlow=1}
+
+// Ampliación de iconos y recompensas sorpresa.
+const v81DrawPickupBase=drawPickup;
+drawPickup=function(p){
+ if(!['turbo','life','gift'].includes(p.type)){v81DrawPickupBase(p);return}
+ ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);const data={turbo:['#fde047','⚡'],life:['#fb7185','♥'],gift:['#c084fc','🎁']}[p.type];ctx.shadowColor=data[0];ctx.shadowBlur=30;const g=ctx.createRadialGradient(-6,-8,1,0,0,p.r);g.addColorStop(0,'#fff');g.addColorStop(.25,data[0]);g.addColorStop(1,'#111827');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,p.r,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='900 15px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(data[1],0,1);ctx.restore();
+}
+const v81SpawnPickupBase=spawnPickup;
+spawnPickup=function(){
+ const r=Math.random();if(r<.035){pickups.push({x:rnd(25,W-25),y:-35,r:17,vy:rnd(2.4,3.5),type:'gift',rot:0,value:1});return}
+ if(r<.065){pickups.push({x:rnd(25,W-25),y:-35,r:17,vy:rnd(2.4,3.5),type:'turbo',rot:0,value:1});return}
+ if(r<.08){pickups.push({x:rnd(25,W-25),y:-35,r:17,vy:rnd(2.4,3.5),type:'life',rot:0,value:1});return}
+ v81SpawnPickupBase();
+}
+
+// Fondo vivo: auroras, rayos, naves y lluvia de meteoritos.
+const v81BackgroundBase=drawBackground;
+drawBackground=function(){
+ v81BackgroundBase();const t=performance.now()/1000;ctx.save();
+ // Aurora ondulante
+ ctx.globalCompositeOperation='screen';for(let k=0;k<3;k++){ctx.beginPath();for(let x=0;x<=W;x+=18){const y=H*(.13+k*.045)+Math.sin(x*.012+t*(.45+k*.12)+k)*24; x?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.strokeStyle=[`rgba(52,211,153,${.12-k*.02})`,`rgba(34,211,238,${.12-k*.02})`,`rgba(192,132,252,${.11-k*.02})`][k];ctx.lineWidth=24-k*5;ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=28;ctx.stroke()}
+ // Naves lejanas
+ v81Weather.shipX=(v81Weather.shipX+.38)%(W+340)-170;ctx.globalAlpha=.55;ctx.fillStyle='#dbeafe';ctx.shadowColor='#38bdf8';ctx.shadowBlur=14;ctx.beginPath();ctx.ellipse(v81Weather.shipX,H*.24,18,4,0,0,7);ctx.fill();ctx.fillStyle='#f472b6';ctx.fillRect(v81Weather.shipX-25,H*.24-1,7,2);
+ // Lluvia de meteoritos lejana
+ for(let i=0;i<4;i++){const mx=((t*(70+i*19)+i*230)%(W+340))-170,my=((t*(35+i*11)+i*120)%(H*.52));const lg=ctx.createLinearGradient(mx-80,my-35,mx,my);lg.addColorStop(0,'rgba(251,146,60,0)');lg.addColorStop(1,'rgba(255,255,255,.85)');ctx.strokeStyle=lg;ctx.lineWidth=2+i*.35;ctx.beginPath();ctx.moveTo(mx-90,my-42);ctx.lineTo(mx,my);ctx.stroke()}
+ // Rayos ocasionales
+ if(Math.random()<.0018)v81Weather.lightning=1;if(v81Weather.lightning>0){ctx.globalAlpha=v81Weather.lightning;ctx.strokeStyle='#e0f2fe';ctx.lineWidth=2.5;ctx.shadowColor='#60a5fa';ctx.shadowBlur=24;let x=W*rnd(.12,.88);ctx.beginPath();ctx.moveTo(x,0);for(let y=0;y<H*.48;y+=28){x+=rnd(-22,22);ctx.lineTo(x,y)}ctx.stroke();v81Weather.lightning*=.76}
+ ctx.restore();
+}
+
+// Estela y reflejos dinámicos según skin.
+const v81DrawBallBase=drawBall;
+drawBall=function(skin){
+ const fx=v81Fx();ctx.save();if(fx.trail==='rainbow'){for(let i=0;i<ball.trail.length;i++){const tr=ball.trail[i],q=i/ball.trail.length;ctx.globalAlpha=q*.28;ctx.fillStyle=`hsl(${(performance.now()/12+i*26)%360} 95% 65%)`;ctx.beginPath();ctx.arc(tr.x,tr.y,ball.r*(.15+q*.56),0,7);ctx.fill()}}else if(fx.trail==='lightning'){ctx.strokeStyle=skin.c2;ctx.shadowColor=skin.c2;ctx.shadowBlur=16;ctx.lineWidth=3;ctx.beginPath();ball.trail.forEach((tr,i)=>i?ctx.lineTo(tr.x+rnd(-5,5),tr.y+rnd(-5,5)):ctx.moveTo(tr.x,tr.y));ctx.stroke()}ctx.restore();
+ v81DrawBallBase(skin);ctx.save();ctx.translate(ball.x,ball.y);const t=performance.now()/1000;const rg=ctx.createRadialGradient(Math.sin(t)*ball.r*.2,-ball.r*.25,1,0,0,ball.r*1.15);rg.addColorStop(0,'rgba(255,255,255,.48)');rg.addColorStop(.28,'rgba(255,255,255,.06)');rg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=rg;ctx.beginPath();ctx.arc(0,0,ball.r*.96,0,7);ctx.fill();if(v81SpawnGlow>.01){ctx.globalAlpha=v81SpawnGlow;ctx.strokeStyle=skin.c1;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,ball.r+28*(1-v81SpawnGlow),0,7);ctx.stroke()}ctx.restore()
+}
+
+// Eventos premium: inversión, gravedad reducida, portales y meteorito gigante.
+function v81StartPremiumEvent(){
+ const e=choice(['invert','gravity','portal','giant']);
+ if(e==='invert'){v81Invert=300;eventBanner.textContent='↕️ CONTROLES INVERTIDOS'}
+ if(e==='gravity'){v81LowGravity=360;eventBanner.textContent='🌙 GRAVEDAD REDUCIDA'}
+ if(e==='portal'){v81PortalHue=420;eventBanner.textContent='🌀 PORTAL DIMENSIONAL'}
+ if(e==='giant'){v81GiantMeteor={x:rnd(W*.2,W*.8),y:-120,r:72,vy:1.55};eventBanner.textContent='☄️ METEORITO GIGANTE'}
+ eventBanner.classList.add('show');setTimeout(()=>eventBanner.classList.remove('show'),2300)
+}
+const v81SetTargetBase=setTarget;
+setTarget=function(x,y){if(v81Invert>0){x=W-x;y=H-y}v81SetTargetBase(x,y)}
+const v81UpdateBase2=update;
+update=function(dt){
+ const beforeCoins=runCoins;v81UpdateBase2(dt);if(state!=='play')return;const f=Math.min(2,dt/16.67);
+ if(runCoins>beforeCoins){v81Tone(v81Fx().sound*1.5,.08,.025,'triangle');v81SkinBurst(ball.x,ball.y,.35)}
+ if(v81Invert>0)v81Invert-=f;if(v81LowGravity>0){v81LowGravity-=f;for(const o of obstacles)o.vy*=.994}
+ if(v81PortalHue>0)v81PortalHue-=f;
+ if(Math.random()<.00055&&!v81GiantMeteor&&v8EventType==='')v81StartPremiumEvent();
+ if(v81GiantMeteor){v81GiantMeteor.y+=v81GiantMeteor.vy*f*speedRush;if(v81GiantMeteor.y>H+130)v81GiantMeteor=null;else if(hit(ball,v81GiantMeteor,-18)){if(power.type==='shield'||power.type==='gold'||power.type==='ghost'){score+=500;runCoins+=25;v81SkinBurst(v81GiantMeteor.x,v81GiantMeteor.y,1.6);v81GiantMeteor=null}else{lives--;shake=18;flash=1;v81GiantMeteor=null;if(lives<=0){end();return}}}}
+ for(const p of pickups){if(!p.dead&&hit(ball,p,2)){if(p.type==='life'){p.dead=true;lives=Math.min(5,lives+1);toast('VIDA EXTRA ♥');v81SkinBurst(p.x,p.y,1)}else if(p.type==='turbo'){p.dead=true;speedRush=2.05;speedRushTime=250;rushLabel='MEGA TURBO x2.05';toast(rushLabel);v81Tone(880,.2,.06,'sawtooth')}else if(p.type==='gift'){p.dead=true;const reward=choice([25,50,75,100]);runCoins+=reward;toast(`REGALO +${reward} 🪙`);v81SkinBurst(p.x,p.y,1.3)}}}
+ pickups=pickups.filter(p=>!p.dead);v81SpawnGlow*=.9;
+}
+const v81DrawBase2=draw;
+draw=function(){
+ if(v81PortalHue>0)canvas.style.filter=`hue-rotate(${Math.sin(performance.now()/220)*45}deg) saturate(1.25)`;else canvas.style.filter='';
+ v81DrawBase2();if(v81GiantMeteor){const o=v81GiantMeteor;ctx.save();ctx.translate(o.x,o.y);ctx.shadowColor='#fb923c';ctx.shadowBlur=50;const g=ctx.createRadialGradient(-22,-28,4,0,0,o.r);g.addColorStop(0,'#fff7ed');g.addColorStop(.18,'#fb923c');g.addColorStop(.58,'#9a3412');g.addColorStop(1,'#431407');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,o.r,0,7);ctx.fill();ctx.fillStyle='rgba(30,10,5,.45)';for(const c of[[-.3,-.2,.2],[.35,.12,.16],[-.05,.45,.13]]){ctx.beginPath();ctx.arc(c[0]*o.r,c[1]*o.r,c[2]*o.r,0,7);ctx.fill()}ctx.restore()}
+}
+
+// Cofre diario.
+function openChest(){const today=new Date().toISOString().slice(0,10),key='cb_chest_'+today,opened=localStorage.getItem(key)==='1';modalContent.innerHTML=`<h2>COFRE DIARIO</h2><div class="chest-card"><div style="font-size:76px">${opened?'🔓':'🎁'}</div><p>${opened?'Cofre abierto. Vuelve mañana.':'Puede contener monedas o una ventaja.'}</p><button id="openChestNow" class="btn primary" ${opened?'disabled':''}>${opened?'ABIERTO':'ABRIR COFRE'}</button></div>`;openModal();if(!opened)$('#openChestNow').onclick=()=>{const reward=choice([100,150,200,250,400]);totalCoins+=reward;localStorage.setItem('cb_coins',totalCoins);localStorage.setItem(key,'1');toast(`COFRE +${reward} 🪙`);v81Tone(988,.25,.07,'triangle');openChest()}}
+
+// Ruleta diaria.
+function openWheel(){const today=new Date().toISOString().slice(0,10),key='cb_wheel_'+today,used=localStorage.getItem(key)==='1';modalContent.innerHTML=`<h2>RULETA DE PREMIOS</h2><div class="wheel-card"><div id="wheelDisc" class="wheel-disc">★</div><p>${used?'Ya has girado hoy.':'Un giro gratuito diario.'}</p><button id="spinWheel" class="btn primary" ${used?'disabled':''}>${used?'GIRO USADO':'GIRAR'}</button></div>`;openModal();if(!used)$('#spinWheel').onclick=()=>{const prizes=[50,100,150,200,300,500,750,1000],prize=choice(prizes),disc=$('#wheelDisc');disc.style.transform=`rotate(${1440+rnd(0,360)}deg)`;$('#spinWheel').disabled=true;setTimeout(()=>{totalCoins+=prize;localStorage.setItem('cb_coins',totalCoins);localStorage.setItem(key,'1');toast(`RULETA +${prize} 🪙`);v81Tone(1046,.3,.08,'triangle');openWheel()},2500)}}
+
+// Desafíos diarios y semanales.
+function openChallenges(){const dayKey=new Date().toISOString().slice(0,10),week=Math.ceil((Date.now()/86400000)/7);const daily=[['Recoge 30 monedas',Math.max(0,30-(30-missions.coins))],['Consigue 3 multiplicadores',Math.max(0,3-(5-missions.meteors))],['Llega al nivel 5',Math.min(highestLevel,5)]];modalContent.innerHTML=`<h2>DESAFÍOS</h2><span class="premium-tag">📅 DIARIOS Y SEMANALES</span>${daily.map((d,i)=>`<div class="challenge-row"><b>${d[0]}</b><small>Progreso: ${d[1]} / ${[30,3,5][i]}</small></div>`).join('')}<div class="challenge-row"><b>Desafío semanal: derrota 3 jefes</b><small>Premio: 1.500 monedas</small></div>`;openModal()}
+$('#wheelBtn')&&($('#wheelBtn').onclick=openWheel);$('#chestBtn')&&($('#chestBtn').onclick=openChest);$('#challengesBtn')&&($('#challengesBtn').onclick=openChallenges);
+
+const v81StartBase2=start;start=async function(){v81SpawnGlow=1;v81Invert=0;v81LowGravity=0;v81GiantMeteor=null;v81PortalHue=0;await v81StartBase2();v81Tone(v81Fx().sound,.25,.065,'triangle')}
+openHow=function(){modalContent.innerHTML='<h2>CÓMO JUGAR · V8.1</h2><p>El mundo ahora está vivo: auroras, naves, meteoros y rayos animan cada escenario. Cada skin tiene su propio emblema, estela, sonido, explosión y efecto de recogida. Las esferas muestran claramente su función: 🧲 imán, 🛡 escudo, ⚡ turbo, x2–x20 multiplicadores, 🪙 monedas, 🔥 súper bola, 👻 fantasma, ❄ tiempo lento, ♥ vida y 🎁 regalo. También hay ruleta, cofre diario, desafíos y eventos sorpresa.</p>';openModal()};$('#howBtn').onclick=openHow;
