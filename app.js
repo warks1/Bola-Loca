@@ -46,31 +46,38 @@ addEventListener('resize',resize,{passive:true});resize();
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))} function rnd(a,b){return Math.random()*(b-a)+a} function choice(a){return a[Math.floor(Math.random()*a.length)]} function hit(a,b,extra=0){return Math.hypot(a.x-b.x,a.y-b.y)<a.r+b.r+extra}
 function safeName(){return (nameInput.value.trim()||'Jugador').replace(/[<>]/g,'').slice(0,18)}
 function saveProfile(){playerName=safeName();localStorage.setItem('cb_name',playerName)}
-function start(){saveProfile();state='play';menu.classList.add('hidden');gameOver.classList.add('hidden');modal.classList.add('hidden');hud.classList.remove('hidden');score=0;level=1;runCoins=0;lives=gameMode==='survival'?1:3;obstacles=[];pickups=[];particles=[];spawnO=0;spawnP=0;spawnMeteor=90;power={type:'',time:0};multiplier=1;multiTime=0;applyStartingPower();ball.r=clamp(W*.055,19,27);ball.x=ball.targetX=W/2;ball.y=ball.targetY=H*.76;ball.trail=[];last=performance.now();updateHud()}
+function start(){saveProfile();startMusic();state='play';menu.classList.add('hidden');gameOver.classList.add('hidden');modal.classList.add('hidden');hud.classList.remove('hidden');score=0;level=1;runCoins=0;lives=gameMode==='survival'?1:3;obstacles=[];pickups=[];particles=[];spawnO=0;spawnP=0;spawnMeteor=90;power={type:'',time:0};multiplier=1;multiTime=0;applyStartingPower();ball.r=clamp(W*.055,19,27);ball.x=ball.targetX=W/2;ball.y=ball.targetY=H*.76;ball.trail=[];last=performance.now();updateHud()}
 function end(){state='over';hud.classList.add('hidden');gameOver.classList.remove('hidden');const final=Math.floor(score);$('#finalScore').textContent=`${final} puntos · nivel ${level} · ${runCoins} monedas`;$('#rankMessage').textContent='Puntuación guardada en el ranking.';highestLevel=Math.max(highestLevel,level);localStorage.setItem('cb_highest_level',highestLevel);const newPrestige=Math.floor(highestLevel/10);if(newPrestige>rewardedPrestige){const gained=(newPrestige-rewardedPrestige)*1000;totalCoins+=gained;rewardedPrestige=newPrestige;prestige=newPrestige;localStorage.setItem('cb_rewarded_prestige',rewardedPrestige);localStorage.setItem('cb_prestige',prestige);$('#rankMessage').textContent=`¡Prestigio ${prestige}! Premio: ${gained} monedas.`}totalCoins+=runCoins;localStorage.setItem('cb_coins',totalCoins);submitScore(final,level)}
 function setTarget(x,y){if(state!=='play')return;ball.targetX=clamp(x,ball.r,W-ball.r);ball.targetY=clamp(y,105,H-ball.r-10)}
-// Control tactil relativo: la bola no salta debajo del dedo al comenzar a tocar.
-// El jugador puede pulsar en cualquier zona y arrastrar; la bola conserva su separacion visual.
-let activePointer=null,dragStartX=0,dragStartY=0,dragBallX=0,dragBallY=0;
+// Control tactil v2: en movil la bola siempre queda por encima del dedo.
+// Así permanece visible incluso durante movimientos rápidos o toques largos.
+let activePointer=null;
+const TOUCH_OFFSET=110;
+function moveFromPointer(e){
+ if(e.pointerType==='touch'){
+   setTarget(e.clientX,e.clientY-TOUCH_OFFSET);
+ }else{
+   setTarget(e.clientX,e.clientY);
+ }
+}
 canvas.addEventListener('pointerdown',e=>{
  if(state!=='play')return;
  activePointer=e.pointerId;
- dragStartX=e.clientX;dragStartY=e.clientY;
- dragBallX=ball.targetX;dragBallY=ball.targetY;
  canvas.setPointerCapture?.(e.pointerId);
+ moveFromPointer(e);
  e.preventDefault();
-});
+},{passive:false});
 canvas.addEventListener('pointermove',e=>{
  if(state!=='play'||activePointer!==e.pointerId)return;
- const sensitivity=e.pointerType==='touch'?1.08:1;
- setTarget(dragBallX+(e.clientX-dragStartX)*sensitivity,dragBallY+(e.clientY-dragStartY)*sensitivity);
+ moveFromPointer(e);
  e.preventDefault();
-});
+},{passive:false});
 function releasePointer(e){if(activePointer===e.pointerId)activePointer=null}
-canvas.addEventListener('pointerup',releasePointer);
-canvas.addEventListener('pointercancel',releasePointer);
+canvas.addEventListener('pointerup',releasePointer,{passive:false});
+canvas.addEventListener('pointercancel',releasePointer,{passive:false});
 canvas.addEventListener('lostpointercapture',releasePointer);
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
+canvas.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 canvas.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 function spawnObstacle(){const type=choice(['rock','spike','crate','meteor','satellite','mine','laser','portal','comet']);const r=rnd(19,35)+Math.min(level*.35,10);const modeSpeed=gameMode==='survival'?1.35:gameMode==='meteor'?1.18:1;obstacles.push({x:rnd(r,W-r),y:-55,r,vy:(rnd(2.3,3.9)+level*.23)*modeSpeed,type,rot:rnd(0,7),spin:rnd(-.05,.05),phase:rnd(0,7),passed:false})}
 function spawnPickup(){const roll=Math.random();let type;if(gameMode==='coins')type=roll<.82?'coin':roll<.88?'magnet':roll<.94?'double':'shield';else if(gameMode==='meteor')type=roll<.42?'coin':roll<.76?'multi':roll<.84?'shield':roll<.92?'magnet':'gold';else type=roll<.60?'coin':roll<.69?'shield':roll<.78?'magnet':roll<.86?'gold':roll<.93?'slow':roll<.97?'double':'multi';pickups.push({x:rnd(25,W-25),y:-35,r:type==='coin'?11:17,vy:rnd(2.2,3.3)+level*.08,type,rot:0,value:type==='multi'?choice([2,2,3,3,5,5,10,20]):1})}
@@ -104,6 +111,35 @@ function drawFloor(){const horizon=H*.61,t=performance.now()/1000;ctx.save();con
 function drawBall(skin){for(let i=0;i<ball.trail.length;i++){const tr=ball.trail[i],q=i/ball.trail.length;ctx.globalAlpha=q*.28;ctx.shadowColor=skin.c2;ctx.shadowBlur=18;ctx.fillStyle=skin.c2;ctx.beginPath();ctx.arc(tr.x,tr.y,ball.r*(.18+q*.72),0,7);ctx.fill()}ctx.globalAlpha=1;ctx.save();ctx.translate(ball.x,ball.y);ctx.shadowColor=power.type==='gold'?'#fde047':skin.c2;ctx.shadowBlur=32;ctx.fillStyle=circleGradient(0,0,ball.r,skin);ctx.beginPath();ctx.arc(0,0,ball.r,0,7);ctx.fill();ctx.strokeStyle=power.type==='shield'?'#a5f3fc':power.type==='gold'?'#fef08a':'rgba(255,255,255,.92)';ctx.lineWidth=power.type?6:3;ctx.stroke();ctx.globalAlpha=.55;ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(-ball.r*.32,-ball.r*.4,ball.r*.22,ball.r*.12,-.55,0,7);ctx.fill();ctx.globalAlpha=1;if(selectedSkin==='football'){ctx.fillStyle='#111827';for(let i=0;i<5;i++){const a=i/5*Math.PI*2;ctx.beginPath();ctx.arc(Math.cos(a)*ball.r*.48,Math.sin(a)*ball.r*.48,ball.r*.13,0,7);ctx.fill()}ctx.beginPath();ctx.arc(0,0,ball.r*.14,0,7);ctx.fill()}if(power.type==='shield'){ctx.rotate(performance.now()/600);ctx.strokeStyle='rgba(103,232,249,.72)';ctx.lineWidth=3;ctx.setLineDash([8,7]);ctx.beginPath();ctx.arc(0,0,ball.r+13,0,7);ctx.stroke();ctx.setLineDash([])}ctx.restore()}
 function draw(){ctx.clearRect(0,0,W,H);drawBackground();ctx.save();ctx.translate(rnd(-shake,shake),rnd(-shake,shake));for(const o of obstacles)drawObstacle(o);for(const p of pickups)drawPickup(p);const skin=skins.find(s=>s.id===selectedSkin)||skins[0];drawBall(skin);for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.shadowColor=p.color;ctx.shadowBlur=12;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill()}ctx.globalAlpha=1;ctx.restore();if(state==='play'){ctx.save();ctx.fillStyle='rgba(5,7,24,.72)';roundedRect(W/2-66,76,132,30,15);ctx.fill();ctx.fillStyle='#fff';ctx.font='900 15px Arial';ctx.textAlign='center';ctx.fillText(`Vidas  ${'❤'.repeat(lives)}`,W/2,97);if(power.type){ctx.fillStyle='rgba(5,7,24,.8)';roundedRect(W/2-82,H-48,164,32,16);ctx.fill();ctx.fillStyle='#fde68a';ctx.fillText(`${power.type.toUpperCase()} ${Math.ceil(power.time/60)}s`,W/2,H-27)}ctx.restore()}if(flash>.02){ctx.fillStyle=`rgba(255,255,255,${flash*.35})`;ctx.fillRect(0,0,W,H)}const vign=ctx.createRadialGradient(W/2,H*.45,Math.min(W,H)*.2,W/2,H*.45,Math.max(W,H)*.78);vign.addColorStop(.65,'rgba(0,0,0,0)');vign.addColorStop(1,'rgba(0,0,0,.45)');ctx.fillStyle=vign;ctx.fillRect(0,0,W,H)}
 
+
+// Música procedural ligera, sin archivos externos. Se inicia tras una pulsación del usuario.
+let audioCtx=null,musicTimer=null,musicEnabled=localStorage.getItem('cb_music')!=='off',musicStep=0;
+const musicNotes=[220,277.18,329.63,440,329.63,277.18,196,246.94,293.66,392,293.66,246.94];
+function ensureAudio(){
+ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+ if(audioCtx.state==='suspended') audioCtx.resume();
+}
+function playTone(freq,when,duration=.22,volume=.035,type='sine'){
+ if(!audioCtx||!musicEnabled)return;
+ const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+ osc.type=type;osc.frequency.setValueAtTime(freq,when);
+ gain.gain.setValueAtTime(0.0001,when);gain.gain.exponentialRampToValueAtTime(volume,when+.015);gain.gain.exponentialRampToValueAtTime(0.0001,when+duration);
+ osc.connect(gain).connect(audioCtx.destination);osc.start(when);osc.stop(when+duration+.03);
+}
+function musicTick(){
+ if(!musicEnabled||!audioCtx)return;
+ const now=audioCtx.currentTime+.02,n=musicNotes[musicStep%musicNotes.length];
+ playTone(n,now,.28,.025,'triangle');
+ if(musicStep%2===0)playTone(n/2,now,.34,.018,'sine');
+ if(musicStep%4===0)playTone(110,now,.12,.014,'square');
+ musicStep++;
+}
+function startMusic(){
+ if(!musicEnabled)return;ensureAudio();if(musicTimer)return;musicTick();musicTimer=setInterval(musicTick,330);updateMusicButtons();
+}
+function stopMusic(){if(musicTimer){clearInterval(musicTimer);musicTimer=null}updateMusicButtons()}
+function toggleMusic(){musicEnabled=!musicEnabled;localStorage.setItem('cb_music',musicEnabled?'on':'off');musicEnabled?startMusic():stopMusic();}
+function updateMusicButtons(){document.querySelectorAll('[data-music]').forEach(b=>b.textContent=musicEnabled?'🔊':'🔇')}
 function applyStartingPower(){for(const key of ['shield','magnet','gold','slow','double']){if(inventory[key]>0){inventory[key]--;localStorage.setItem('cb_inventory',JSON.stringify(inventory));activate(key);break}}}
 function loop(now){const dt=now-last||16;last=now;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 async function submitScore(points,lvl){const row={player_name:playerName||'Jugador',score:points,level:lvl};let local=JSON.parse(localStorage.getItem('cb_scores')||'[]');local.push({...row,created_at:new Date().toISOString()});local=local.sort((a,b)=>b.score-a.score).slice(0,100);localStorage.setItem('cb_scores',JSON.stringify(local));bc?.postMessage({type:'score',row});if(online){try{await supabaseClient.from('scores').insert(row)}catch(e){console.warn(e)}}}
@@ -124,4 +160,4 @@ function openMissions(){saveMissions();const allDone=missions.coins<=0&&missions
 function openModes(){const modes=[['classic','Clásico','Equilibrado: monedas, ventajas y obstáculos.'],['coins','Lluvia de monedas','Más monedas y mayor frecuencia de imanes.'],['survival','Supervivencia','Una sola vida, velocidad alta y más puntuación.'],['meteor','Tormenta de meteoritos','Muchos multiplicadores y obstáculos rápidos.']];modalContent.innerHTML=`<h2>MODOS DE JUEGO</h2>${modes.map(m=>`<button class="mode-card ${gameMode===m[0]?'selected':''}" data-mode="${m[0]}"><b>${m[1]}</b><span>${m[2]}</span></button>`).join('')}`;modalContent.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{gameMode=b.dataset.mode;localStorage.setItem('cb_mode',gameMode);openModes()});openModal()}
 function openPowers(){const items=[['shield','Escudo inicial',180,'Protege del primer impacto.'],['magnet','Imán inicial',220,'Atrae monedas cercanas.'],['gold','Súper bola inicial',320,'Destruye obstáculos temporalmente.'],['slow','Tiempo lento',260,'Reduce la velocidad del escenario.'],['double','Monedas x2',300,'Duplica las monedas recogidas.']];modalContent.innerHTML=`<h2>VENTAJAS</h2><p>Monedas: <b>${totalCoins}</b></p>${items.map(i=>`<div class="power-shop"><div><b>${i[1]}</b><small>${i[3]}</small></div><button class="btn secondary" data-power="${i[0]}">${i[2]} 🪙 · Tienes ${inventory[i[0]]||0}</button></div>`).join('')}`;modalContent.querySelectorAll('[data-power]').forEach(b=>b.onclick=()=>{const it=items.find(x=>x[0]===b.dataset.power);if(totalCoins<it[2]){alert('No tienes suficientes monedas.');return}totalCoins-=it[2];inventory[it[0]]=(inventory[it[0]]||0)+1;localStorage.setItem('cb_coins',totalCoins);localStorage.setItem('cb_inventory',JSON.stringify(inventory));openPowers()});openModal()}
 function openHow(){modalContent.innerHTML='<h2>CÓMO JUGAR</h2><p>Elige un modo, compra skins y ventajas, supera niveles y alcanza un prestigio cada 10 niveles. Cada nuevo prestigio concede 1000 monedas. Arrastra el dedo cerca de la bola para moverla sin que se coloque directamente bajo tu pulsación. Recoge monedas, ventajas y meteoritos con multiplicadores aleatorios. Evita rocas, pinchos, satélites, minas, láseres, portales y cometas.</p>';openModal()}
-$('#playBtn').onclick=start;$('#retryBtn').onclick=start;$('#homeBtn').onclick=()=>{state='menu';gameOver.classList.add('hidden');menu.classList.remove('hidden')};$('#rankingBtn').onclick=openRanking;$('#chatBtn').onclick=openChat;$('#skinsBtn').onclick=openSkins;$('#missionsBtn').onclick=openMissions;$('#modesBtn').onclick=openModes;$('#powersBtn').onclick=openPowers;$('#howBtn').onclick=openHow;$('#closeModal').onclick=closeModal;$('#pauseBtn').onclick=()=>{if(state==='play'){state='pause';modalContent.innerHTML='<h2>PAUSA</h2><button id="resume" class="btn primary">CONTINUAR</button><button id="quit" class="btn secondary">SALIR AL MENÚ</button>';openModal();$('#resume').onclick=()=>{state='play';closeModal()};$('#quit').onclick=()=>{state='menu';hud.classList.add('hidden');closeModal();menu.classList.remove('hidden')}}};
+$('#playBtn').onclick=start;$('#musicBtn').onclick=toggleMusic;$('#hudMusicBtn').onclick=toggleMusic;updateMusicButtons();$('#retryBtn').onclick=start;$('#homeBtn').onclick=()=>{state='menu';gameOver.classList.add('hidden');menu.classList.remove('hidden')};$('#rankingBtn').onclick=openRanking;$('#chatBtn').onclick=openChat;$('#skinsBtn').onclick=openSkins;$('#missionsBtn').onclick=openMissions;$('#modesBtn').onclick=openModes;$('#powersBtn').onclick=openPowers;$('#howBtn').onclick=openHow;$('#closeModal').onclick=closeModal;$('#pauseBtn').onclick=()=>{if(state==='play'){state='pause';modalContent.innerHTML='<h2>PAUSA</h2><button id="resume" class="btn primary">CONTINUAR</button><button id="quit" class="btn secondary">SALIR AL MENÚ</button>';openModal();$('#resume').onclick=()=>{state='play';closeModal()};$('#quit').onclick=()=>{state='menu';hud.classList.add('hidden');closeModal();menu.classList.remove('hidden')}}};
