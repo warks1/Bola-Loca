@@ -1,22 +1,15 @@
-# Crazy Ball v6 Prestige
+# Crazy Ball v6.2 Ultra Graphics
 
-Demo web ampliada con ranking y chat local/online, tienda de skins, ventajas consumibles, niveles, prestigio, misiones y cuatro modos de juego.
+Versión mejorada visualmente sobre v6.1.
 
-## Novedades
-- Más de 20 skins originales: fútbol, héroes, criaturas y efectos.
-- Color y estela de la bola personalizados por skin.
-- Tienda con precios y monedas persistentes.
-- Ventajas comprables: escudo, imán, súper bola, tiempo lento y monedas x2.
-- Dificultad creciente en cada nivel.
-- Prestigio cada 10 niveles, con premio de 1000 monedas por nuevo prestigio.
-- Misiones con recompensa de 500 monedas.
-- Modos Clásico, Lluvia de monedas, Supervivencia y Tormenta de meteoritos.
-- Fondo con suelo de perspectiva y efectos gráficos mejorados.
-
-## Ejecutar
-Abre `index.html` en un navegador o publica la carpeta completa en GitHub Pages.
-
-## Online
-Rellena `config.js` con las claves de Supabase y ejecuta `supabase.sql` para activar ranking y chat entre dispositivos.
-
-Las skins de héroes y criaturas son diseños originales inspirados en géneros populares; no usan personajes, escudos ni logotipos oficiales.
+## Mejoras
+- Fondo espacial con nebulosas y estrellas animadas.
+- Ciudad futurista en el horizonte.
+- Suelo 3D con rejilla dinámica y profundidad.
+- Obstáculos rediseñados con volumen, luces y detalles.
+- Bola con brillo, reflejo, sombra y estela mejorada.
+- Efectos de energía para escudo y ventajas.
+- Partículas con resplandor y efectos de impacto.
+- Interfaz premium con paneles translúcidos y botones mejorados.
+- Se conserva el control táctil relativo corregido.
+- Se mantienen niveles, prestigio, misiones, modos, tienda, ranking y chat.
