@@ -1,34 +1,24 @@
-# Crazy Ball v5 Online
+# Crazy Ball v5.1 Online Ampliada
 
-Demo web jugable para móvil y ordenador.
+Versión fusionada de Crazy Ball v5 Online con las funciones de la beta v4 ampliada.
 
 ## Incluye
-- Ranking de puntuaciones.
-- Chat entre jugadores.
-- Nombre de jugador persistente.
-- Modo local automático para probar sin configurar servidor.
-- Modo online real mediante Supabase.
-- Niveles con dificultad creciente.
-- Rangos implícitos por progreso de nivel.
-- Skins comprables con monedas y cambio de color de la bola.
-- Escudo corregido: protege frente a obstáculos.
-- Súper bola dorada indestructible temporal.
-- Imán de monedas.
-- Multiplicador x3.
-- Más monedas y obstáculos variados.
-- Control táctil limitado: la bola no salta directamente debajo del dedo.
+- Juego táctil para móvil, tablet y PC.
+- Ranking de puntuaciones y chat online mediante Supabase.
+- Modo local automático sin configuración online.
+- Skins comprables con monedas y color de bola según la skin.
+- Misiones persistentes de monedas, meteoritos y obstáculos esquivados.
+- Meteoritos con multiplicadores aleatorios x2, x3, x5, x10 y x20.
+- Obstáculos variados: rocas, pinchos, cajas, meteoritos, satélites, minas, láseres, portales y cometas.
+- Escudo, imán, súper bola dorada y multiplicadores.
+- Estela, partículas, destellos, vibración visual e incremento de dificultad.
+- Control táctil con desplazamiento limitado para evitar que la bola salte debajo del dedo.
 
-## Probar
+## Ejecutar
 Abre `index.html` o publica la carpeta completa en GitHub Pages.
 
-## Activar online real
+## Activar ranking y chat entre dispositivos
 1. Crea un proyecto gratuito en Supabase.
-2. Abre el editor SQL y ejecuta `supabase.sql`.
-3. En Supabase, copia la URL del proyecto y la clave `anon public`.
-4. Pega ambas en `config.js`.
-5. Sube todos los archivos a GitHub Pages.
-
-Sin claves, ranking y chat funcionan en modo local y se sincronizan entre pestañas del mismo dispositivo.
-
-## Seguridad antes de publicar a gran escala
-La demo permite inserciones públicas para facilitar las pruebas. Para una versión final conviene añadir autenticación, moderación, filtros anti-spam, rate limiting y validación mediante funciones del servidor.
+2. Ejecuta `supabase.sql` en el editor SQL.
+3. Copia la URL y la clave pública anon en `config.js`.
+4. Publica todos los archivos juntos.
