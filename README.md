@@ -1,14 +1,14 @@
-# Crazy Ball v7 Evolution
+# Crazy Ball v8 Infinity
 
-Versión basada en Crazy Ball v6.4 Turbo Custom.
+Evolución de Crazy Ball v7.1 con emblemas originales dentro de todas las bolas, recompensas diarias, colección de skins, eventos sorpresa, mejoras visuales y personalidad por categorías.
 
-## Novedades v7
-- Música local integrada (`music-v7.wav`) sin depender de internet.
-- Jefe final cada 5 niveles.
-- Logros con recompensas en monedas.
-- Escenarios dinámicos: espacio, atardecer, hielo y ciudad neón.
-- Menú visual renovado.
-- Conserva skins, tienda, ventajas, niveles, prestigio, misiones, ranking, chat y control táctil.
+## Novedades
+- Emblema propio dentro de cada skin.
+- Símbolos claros en todas las esferas de ventajas.
+- Premio diario de 7 días.
+- Eventos: lluvia de monedas, tormenta de ventajas y flujo lento.
+- Tienda y colección rediseñadas.
+- Bola del menú muestra la skin equipada.
+- Efectos de partículas adaptados a la skin.
 
-## Abrir
-Sube todos los archivos a GitHub Pages o abre `index.html`. En iPhone pulsa **JUGAR** o **MÚSICA ON** para autorizar el audio.
+Los emblemas deportivos, heroicos y de criaturas son diseños genéricos y originales; no se incluyen marcas, escudos ni personajes oficiales.

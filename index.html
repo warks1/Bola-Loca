@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#07091b" />
-  <title>Crazy Ball v7 Evolution</title>
+  <title>Crazy Ball v8 Infinity</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -21,13 +21,16 @@
 
   <main id="menu" class="screen">
     <section class="panel menu-panel">
+      <div class="menu-orbit orbit-a"></div><div class="menu-orbit orbit-b"></div>
       <div class="logo" id="logoBall"></div>
-      <h1>CRAZY BALL</h1>
-      <p class="subtitle">Esquiva, consigue ventajas, supera niveles y compite con otros jugadores.</p>
+      <div class="version-chip">V8 · INFINITY</div><h1>CRAZY BALL</h1>
+      <p class="subtitle">Velocidad, poderes, jefes y competición en una aventura arcade más intensa.</p>
+      <div class="menu-stats"><span>⚡ TURBOS</span><span>👾 JEFES</span><span>🏆 RANKING</span><span>🎁 PREMIOS</span></div>
       <input id="playerName" class="input" maxlength="18" placeholder="Tu nombre" autocomplete="nickname" />
       <button id="playBtn" class="btn primary">JUGAR</button>
       <div class="grid2">
         <button id="skinsBtn" class="btn secondary">SKINS</button>
+        <button id="dailyBtn" class="btn secondary">PREMIO DIARIO</button>
         <button id="rankingBtn" class="btn secondary">RANKING</button>
         <button id="missionsBtn" class="btn secondary">MISIONES</button>
         <button id="modesBtn" class="btn secondary">MODOS</button>
@@ -59,7 +62,7 @@
     </div>
   </section>
 
-  <audio id="bgMusic" src="music-v7.wav" loop preload="auto" playsinline></audio>
+  <audio id="bgMusic" src="music-v7-animated.wav" loop preload="auto" playsinline></audio>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>

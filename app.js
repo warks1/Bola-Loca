@@ -213,3 +213,97 @@ const v64ToggleMusic=toggleMusic;
 toggleMusic=async function(){musicEnabled=!musicEnabled;localStorage.setItem('cb_music',musicEnabled?'on':'off');if(musicEnabled){try{bgMusic.volume=.48;await bgMusic.play()}catch(e){await startMusic(true)}}else{bgMusic?.pause();stopMusic()}updateMusicButtons()}
 updateMusicButtons=function(){document.querySelectorAll('[data-music]').forEach(b=>{b.textContent=musicEnabled?'🔊 MÚSICA ON':'🔇 MÚSICA OFF';b.classList.toggle('music-on',musicEnabled)})}
 $('#achievementsBtn').onclick=openAchievements;$('#themesBtn').onclick=openThemes;$('#playBtn').onclick=start;$('#retryBtn').onclick=start;$('#musicBtn').onclick=toggleMusic;$('#hudMusicBtn').onclick=toggleMusic;updateMusicButtons();
+
+// ===== v7.1 VISUAL BOOST =====
+let v71Pulse=0;
+const v7DrawBackgroundRef=drawBackground;
+drawBackground=function(){
+  v7DrawBackgroundRef();
+  const t=performance.now()/1000;
+  // capas de luz ambiental y estrellas fugaces
+  ctx.save();
+  const glow=ctx.createRadialGradient(W*.5,H*.62,0,W*.5,H*.62,Math.max(W,H)*.62);
+  glow.addColorStop(0,'rgba(83,245,255,.11)');glow.addColorStop(.42,'rgba(111,76,255,.055)');glow.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+  for(let i=0;i<3;i++){
+    const x=((t*(95+i*32)+i*W*.37)%(W+260))-130;
+    const y=H*(.16+i*.14);
+    const lg=ctx.createLinearGradient(x-100,y-28,x+60,y+18);
+    lg.addColorStop(0,'rgba(255,255,255,0)');lg.addColorStop(.7,'rgba(160,244,255,.18)');lg.addColorStop(1,'rgba(255,255,255,.75)');
+    ctx.strokeStyle=lg;ctx.lineWidth=1.5+i*.4;ctx.beginPath();ctx.moveTo(x-110,y-35);ctx.lineTo(x+55,y+15);ctx.stroke();
+  }
+  ctx.restore();
+};
+const v7DrawRef=draw;
+draw=function(){
+  v7DrawRef();
+  if(state!=='play')return;
+  const t=performance.now()/1000;
+  // viñeta cinematográfica
+  ctx.save();
+  const vg=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.24,W/2,H/2,Math.max(W,H)*.72);
+  vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(.72,'rgba(0,0,0,.03)');vg.addColorStop(1,'rgba(0,0,0,.34)');
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  // línea de energía en la base
+  v71Pulse=(v71Pulse+.025)%1;
+  const eg=ctx.createLinearGradient(0,0,W,0);eg.addColorStop(0,'rgba(0,0,0,0)');eg.addColorStop(v71Pulse,'rgba(96,247,255,.75)');eg.addColorStop(Math.min(1,v71Pulse+.16),'rgba(247,86,220,.55)');eg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=eg;ctx.fillRect(0,H-5,W,3);
+  ctx.restore();
+};
+if(bgMusic){bgMusic.volume=.62;bgMusic.playbackRate=1.0}
+
+
+// ===== CRAZY BALL v8 INFINITY =====
+const V8_EMBLEMS={
+ neon:'⚡',fire:'🔥',gold:'♛',forest:'🌿',galaxy:'✦',ice:'❄',lava:'🌋',shadow:'◐',
+ football:'⬟',redclub:'R',blueclub:'B',greenclub:'G',yellowclub:'Y',royalclub:'♕',
+ blaugrana:'BG',merengue:'BD',rojiblanco:'RB',citizens:'C',aurinegro:'AN',
+ nightkeeper:'☾',solarhero:'S',webhero:'🕸',ironhero:'◆',stormhero:'ϟ',
+ capedguardian:'G',steelavenger:'A',nightweb:'W',emeraldgiant:'拳',
+ sparkmouse:'⚡',firelizard:'🔥',waterbeast:'💧',leafbeast:'🍃',psychic:'◉',dragon:'🐉',
+ thunderpet:'ϟ',embercub:'♨',tideturtle:'🌊',vinebeast:'☘',cosmicmind:'✺',
+ rainbow:'∞',plasma:'✹',void:'◉'
+};
+const V8_TRAITS={Originales:'Estela y explosión temática',Fútbol:'Emblema deportivo original',Héroes:'Símbolo heroico y aura propia',Criaturas:'Rostro o elemento de criatura',Especiales:'Efectos premium dinámicos'};
+function v8Emblem(id){return V8_EMBLEMS[id]||'●'}
+function drawSkinEmblem(id,r){
+ ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`1000 ${Math.max(13,r*.72)}px Arial`;
+ ctx.lineWidth=Math.max(2,r*.1);ctx.strokeStyle='rgba(0,0,0,.72)';ctx.fillStyle='#fff';ctx.shadowColor='#fff';ctx.shadowBlur=7;
+ const e=v8Emblem(id);ctx.strokeText(e,0,2);ctx.fillText(e,0,2);ctx.restore();
+}
+const v8DrawBallBase=drawBall;
+drawBall=function(skin){v8DrawBallBase(skin);ctx.save();ctx.translate(ball.x,ball.y);drawSkinEmblem(selectedSkin,ball.r);ctx.restore()}
+openSkins=function(){
+ const cats=[...new Set(skins.map(s=>s.cat))],pct=Math.round(owned.length/skins.length*100);
+ modalContent.innerHTML=`<h2>COLECCIÓN DE SKINS</h2><p>${owned.length}/${skins.length} desbloqueadas · ${pct}% · <b>${totalCoins} 🪙</b></p>${cats.map(cat=>`<h3>${cat}</h3><div class="skin-grid">${skins.filter(s=>s.cat===cat).map(s=>{const isOwned=owned.includes(s.id),sel=selectedSkin===s.id;return `<div class="skin-card ${sel?'equipped':''}"><div class="skin-ball" data-emblem="${v8Emblem(s.id)}" style="background:radial-gradient(circle at 30% 25%,${s.c1},${s.c2} 42%,${s.c3})"></div><b>${s.name}</b><small class="skin-trait">${V8_TRAITS[s.cat]||'Aspecto exclusivo'}</small><small>${s.price?`${s.price} monedas`:'GRATIS'}</small><button class="btn ${sel?'primary':'secondary'}" data-skin="${s.id}">${sel?'EQUIPADA':isOwned?'EQUIPAR':'COMPRAR'}</button></div>`}).join('')}</div>`).join('')}`;
+ modalContent.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>buyOrSelect(b.dataset.skin));openModal();
+}
+function updateMenuBall(){const el=document.querySelector('#logoBall');if(!el)return;const s=skins.find(x=>x.id===selectedSkin)||skins[0];el.style.background=`radial-gradient(circle at 30% 22%,${s.c1},${s.c2} 44%,${s.c3})`;el.innerHTML=`<span class="skin-emblem">${v8Emblem(s.id)}</span>`}
+const v8Buy=buyOrSelect;buyOrSelect=function(id){v8Buy(id);updateMenuBall()};updateMenuBall();
+
+// Recompensa diaria creciente durante 7 días.
+function openDaily(){
+ const today=new Date().toISOString().slice(0,10),last=localStorage.getItem('cb_daily_date'),streak=Number(localStorage.getItem('cb_daily_streak')||0),claimed=last===today;
+ const reward=[150,200,250,350,500,700,1000][Math.min(streak,6)];
+ modalContent.innerHTML=`<h2>PREMIO DIARIO</h2><div class="daily-card"><div class="daily-reward">${claimed?'✓':reward+' 🪙'}</div><p>${claimed?'Premio recogido hoy. Regresa mañana.':`Día ${Math.min(streak+1,7)} de 7`}</p><button id="claimDaily" class="btn primary" ${claimed?'disabled':''}>${claimed?'RECOGIDO':'RECOGER'}</button></div>`;openModal();
+ if(!claimed)document.querySelector('#claimDaily').onclick=()=>{totalCoins+=reward;localStorage.setItem('cb_coins',totalCoins);localStorage.setItem('cb_daily_date',today);localStorage.setItem('cb_daily_streak',String(Math.min(streak+1,7)));toast(`PREMIO +${reward} 🪙`);openDaily()};
+}
+const dailyBtn=document.querySelector('#dailyBtn');if(dailyBtn)dailyBtn.onclick=openDaily;
+
+// Eventos sorpresa v8.
+let v8EventTimer=360,v8EventType='',v8EventDuration=0;
+const eventBanner=document.createElement('div');eventBanner.className='event-banner';document.body.appendChild(eventBanner);
+function startV8Event(){
+ const types=['coinrain','powerstorm','lowgravity'];v8EventType=choice(types);v8EventDuration=360;
+ const labels={coinrain:'🪙 LLUVIA DE MONEDAS',powerstorm:'✨ TORMENTA DE VENTAJAS',lowgravity:'🌙 FLUJO LENTO'};eventBanner.textContent=labels[v8EventType];eventBanner.classList.add('show');setTimeout(()=>eventBanner.classList.remove('show'),2200);
+}
+const v8UpdateBase=update;
+update=function(dt){v8UpdateBase(dt);if(state!=='play')return;const f=Math.min(2,dt/16.67);v8EventTimer-=f;if(v8EventTimer<=0&&!v8EventType){startV8Event();v8EventTimer=rnd(480,800)}if(v8EventType){v8EventDuration-=f;if(v8EventType==='coinrain'&&Math.random()<.07)pickups.push({x:rnd(20,W-20),y:-25,r:11,vy:rnd(2.8,4),type:'coin',rot:0,value:choice([1,1,2,5])});if(v8EventType==='powerstorm'&&Math.random()<.018){const type=choice(['shield','magnet','gold','double','ghost','freeze']);pickups.push({x:rnd(25,W-25),y:-30,r:17,vy:3,type,rot:0,value:1})}if(v8EventType==='lowgravity')for(const o of obstacles)o.vy*=.997;if(v8EventDuration<=0)v8EventType=''}
+}
+const v8StartBase=start;start=async function(){v8EventTimer=rnd(260,430);v8EventType='';v8EventDuration=0;await v8StartBase()};
+
+// Mayor identidad visual por categoría de skin.
+const v8BurstBase=burst;burst=function(x,y,color,n=12,speed=5){const s=skins.find(x=>x.id===selectedSkin);const bonus=s?.cat==='Especiales'?8:s?.cat==='Héroes'?4:0;v8BurstBase(x,y,s?.c2||color,n+bonus,speed)};
+
+openHow=function(){modalContent.innerHTML='<h2>CÓMO JUGAR · V8</h2><p>Cada bola tiene un emblema propio que representa su skin. Las esferas de ventajas también muestran su función: imán, escudo, turbo, congelación, fantasma y multiplicadores. Recoge premios diarios, completa logros, supera jefes y aprovecha eventos sorpresa como lluvia de monedas y tormenta de ventajas.</p>';openModal()};
+document.querySelector('#howBtn').onclick=openHow;
