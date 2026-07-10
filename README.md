@@ -1,17 +1,20 @@
-# Crazy Ball v8.1 Premium Alive
+# Crazy Ball v9.1 Commercial Edition
 
-Versión basada en Crazy Ball v8 Infinity.
+Nueva evolución jugable de la demo web.
 
-## Mejoras principales
-- Fondos vivos con auroras, lluvia de meteoritos, rayos y naves lejanas.
-- Cámara con vibración en impactos y eventos.
-- Reflejos y sombras dinámicas en bola, obstáculos y ventajas.
-- Cada familia de skins tiene estela, sonido, explosión y animación propias.
-- Emblema visible dentro de cada bola.
-- Iconos claros en ventajas, monedas, turbo, vida y cajas sorpresa.
-- Menú con cristal translúcido, transiciones y animaciones sincronizadas.
-- Premio diario, cofre diario, ruleta y desafíos.
-- Eventos sorpresa: gravedad reducida, controles invertidos, portal dimensional y meteorito gigante.
-- Mantiene ranking, chat, niveles, prestigio, misiones, jefes, logros y modos.
+## Novedades
+- Tres modos: Supervivencia, Contrarreloj y Cazajefes.
+- Jefes con barra de vida.
+- Poder especial para dañar jefes.
+- Sistema de combo.
+- Pase de temporada básico.
+- Rango y XP persistentes.
+- Logros.
+- Premio diario de 100 monedas.
+- Tienda y skins ampliadas.
+- Más obstáculos.
+- Guardado automático en el navegador.
+- Control táctil con la bola 70 px por encima del dedo.
 
-Abre `index.html` o publica la carpeta completa en GitHub Pages.
+## Cómo probarla
+Descomprime el ZIP y abre `index.html`.
