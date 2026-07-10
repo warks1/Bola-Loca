@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
   <meta name="theme-color" content="#07091b" />
-  <title>Crazy Ball v6.3 Touch & Music</title>
+  <title>Crazy Ball v7 Evolution</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -32,9 +32,11 @@
         <button id="missionsBtn" class="btn secondary">MISIONES</button>
         <button id="modesBtn" class="btn secondary">MODOS</button>
         <button id="powersBtn" class="btn secondary">VENTAJAS</button>
+        <button id="achievementsBtn" class="btn secondary">LOGROS</button>
+        <button id="themesBtn" class="btn secondary">ESCENARIOS</button>
         <button id="howBtn" class="btn secondary">CÓMO JUGAR</button>
       </div>
-      <button id="musicBtn" data-music class="btn secondary">🔊 MÚSICA</button><button id="chatBtn" class="btn secondary">CHAT ONLINE</button>
+      <button id="musicBtn" data-music class="btn secondary">🔊 MÚSICA ON</button><button id="chatBtn" class="btn secondary">CHAT ONLINE</button>
       <div id="connectionStatus" class="status">Modo local activo</div>
       <div id="toast" class="toast">x2</div>
     </section>
@@ -57,6 +59,7 @@
     </div>
   </section>
 
+  <audio id="bgMusic" src="music-v7.wav" loop preload="auto" playsinline></audio>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>

@@ -1,10 +1,14 @@
-# Crazy Ball v6.3 Touch & Music
+# Crazy Ball v7 Evolution
 
-## Cambios
-- Control táctil corregido: la bola se mantiene 110 px por encima del dedo.
-- Seguimiento directo y estable durante el arrastre.
-- Música de fondo procedural integrada, sin archivos externos.
-- Botón de música en menú y durante la partida.
-- La preferencia de sonido se guarda automáticamente.
+Versión basada en Crazy Ball v6.4 Turbo Custom.
 
-Abre `index.html` o publícalo en GitHub Pages. En iPhone, la música comienza al pulsar JUGAR debido a las reglas de audio del navegador.
+## Novedades v7
+- Música local integrada (`music-v7.wav`) sin depender de internet.
+- Jefe final cada 5 niveles.
+- Logros con recompensas en monedas.
+- Escenarios dinámicos: espacio, atardecer, hielo y ciudad neón.
+- Menú visual renovado.
+- Conserva skins, tienda, ventajas, niveles, prestigio, misiones, ranking, chat y control táctil.
+
+## Abrir
+Sube todos los archivos a GitHub Pages o abre `index.html`. En iPhone pulsa **JUGAR** o **MÚSICA ON** para autorizar el audio.
