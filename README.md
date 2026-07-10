@@ -1,17 +1,13 @@
-# Crazy Ball — Demo ampliada basada en v4
+# Crazy Ball — demo actualizada
 
-Versión jugable preparada para GitHub Pages.
+Versión basada en la última demo con:
 
-## Novedades
-- Rangos nuevos cada 10 niveles superados.
-- Dificultad progresiva en cada nivel.
-- Escudo corregido: bloquea un impacto sin perder vida.
-- Súper bola dorada e indestructible.
-- Imán de monedas.
-- Tiempo lento.
-- Monedas dobles.
-- 41 skins con precios y compra mediante monedas del juego.
-- Nuevas skins de criaturas elementales inspiradas en juegos de colección.
+- Color, brillo y estela propios para cada skin.
+- Vista previa coloreada en el menú y la tienda.
+- Más monedas y grupos de hasta cuatro monedas.
+- Imán y monedas dobles conservados.
+- Dificultad ligeramente superior: más velocidad y obstáculos más frecuentes.
+- Tienda, precios, rangos, escudo corregido y ventajas especiales.
 
-## Publicar en GitHub Pages
-Sube `index.html`, `README.md` y `.nojekyll` a la raíz del repositorio y activa GitHub Pages desde la rama principal.
+## GitHub Pages
+Sube `index.html`, `README.md` y `.nojekyll` a la raíz del repositorio y activa GitHub Pages.
