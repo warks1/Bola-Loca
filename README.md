@@ -1,13 +1,17 @@
-# Crazy Ball
+# Crazy Ball — Demo ampliada basada en v4
 
-Demo web jugable preparada para GitHub Pages.
+Versión jugable preparada para GitHub Pages.
 
-## Controles
-- Móvil: arrastra el dedo. El movimiento es relativo y la bola permanece al menos 145 px por encima del dedo.
-- Ordenador: ratón, flechas o WASD.
+## Novedades
+- Rangos nuevos cada 10 niveles superados.
+- Dificultad progresiva en cada nivel.
+- Escudo corregido: bloquea un impacto sin perder vida.
+- Súper bola dorada e indestructible.
+- Imán de monedas.
+- Tiempo lento.
+- Monedas dobles.
+- 41 skins con precios y compra mediante monedas del juego.
+- Nuevas skins de criaturas elementales inspiradas en juegos de colección.
 
-## Skins
-En el menú principal aparecen flechas para cambiar rápidamente entre skins desbloqueadas. El botón central o el botón SKINS abre la tienda completa.
-
-## Publicación
-Sube `index.html`, `README.md` y `.nojekyll` a la raíz del repositorio y activa GitHub Pages.
+## Publicar en GitHub Pages
+Sube `index.html`, `README.md` y `.nojekyll` a la raíz del repositorio y activa GitHub Pages desde la rama principal.
