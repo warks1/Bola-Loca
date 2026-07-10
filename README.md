@@ -1,24 +1,22 @@
-# Crazy Ball v5.1 Online Ampliada
+# Crazy Ball v6 Prestige
 
-Versión fusionada de Crazy Ball v5 Online con las funciones de la beta v4 ampliada.
+Demo web ampliada con ranking y chat local/online, tienda de skins, ventajas consumibles, niveles, prestigio, misiones y cuatro modos de juego.
 
-## Incluye
-- Juego táctil para móvil, tablet y PC.
-- Ranking de puntuaciones y chat online mediante Supabase.
-- Modo local automático sin configuración online.
-- Skins comprables con monedas y color de bola según la skin.
-- Misiones persistentes de monedas, meteoritos y obstáculos esquivados.
-- Meteoritos con multiplicadores aleatorios x2, x3, x5, x10 y x20.
-- Obstáculos variados: rocas, pinchos, cajas, meteoritos, satélites, minas, láseres, portales y cometas.
-- Escudo, imán, súper bola dorada y multiplicadores.
-- Estela, partículas, destellos, vibración visual e incremento de dificultad.
-- Control táctil con desplazamiento limitado para evitar que la bola salte debajo del dedo.
+## Novedades
+- Más de 20 skins originales: fútbol, héroes, criaturas y efectos.
+- Color y estela de la bola personalizados por skin.
+- Tienda con precios y monedas persistentes.
+- Ventajas comprables: escudo, imán, súper bola, tiempo lento y monedas x2.
+- Dificultad creciente en cada nivel.
+- Prestigio cada 10 niveles, con premio de 1000 monedas por nuevo prestigio.
+- Misiones con recompensa de 500 monedas.
+- Modos Clásico, Lluvia de monedas, Supervivencia y Tormenta de meteoritos.
+- Fondo con suelo de perspectiva y efectos gráficos mejorados.
 
 ## Ejecutar
-Abre `index.html` o publica la carpeta completa en GitHub Pages.
+Abre `index.html` en un navegador o publica la carpeta completa en GitHub Pages.
 
-## Activar ranking y chat entre dispositivos
-1. Crea un proyecto gratuito en Supabase.
-2. Ejecuta `supabase.sql` en el editor SQL.
-3. Copia la URL y la clave pública anon en `config.js`.
-4. Publica todos los archivos juntos.
+## Online
+Rellena `config.js` con las claves de Supabase y ejecuta `supabase.sql` para activar ranking y chat entre dispositivos.
+
+Las skins de héroes y criaturas son diseños originales inspirados en géneros populares; no usan personajes, escudos ni logotipos oficiales.
