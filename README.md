@@ -1,26 +1,13 @@
-# Crazy Ball v10 Full Playable Demo
+# Crazy Ball v10.1 HD Skins & Pets
+
+## Cambios principales
+- La bola queda 125 px por encima del dedo.
+- Guía táctil tenue para indicar dónde se está pulsando.
+- 20 skins de bola con iconos temáticos.
+- 16 mascotas distintas con bonificaciones.
+- Obstáculos redibujados con volumen, luces, sombras y detalles.
+- Monedas y potenciadores con aspecto más definido.
+- Conserva todos los sistemas funcionales de la demo v10.
 
 ## Cómo jugar
-1. Descomprime el ZIP.
-2. Abre `index.html` en Safari, Chrome, Edge o Firefox.
-3. En iPhone, puedes abrirlo desde Archivos o subirlo a GitHub Pages.
-
-## Sistemas incluidos
-- Cuatro modos individuales.
-- Tres modos multijugador simulados contra IA.
-- Mundos seleccionables y desbloqueables.
-- Skins comprables y equipables.
-- Mascotas con bonificaciones.
-- Pase de temporada funcional.
-- Misiones diarias y semanales.
-- Logros reclamables.
-- Tienda de skins, mascotas, mundos y ventajas.
-- Perfil, ranking y ajustes.
-- Jefes, eventos dinámicos, niveles, combos y poderes.
-- Guardado local automático.
-- Control táctil con la bola situada por encima del dedo.
-
-## Importante
-El multijugador por Internet con jugadores reales no puede funcionar dentro de un único archivo offline.
-Esta demo incluye los modos completos contra IA. Para online real hay que conectar un backend
-(Firebase, Supabase, Nakama u otro servidor).
+Descomprime el ZIP y abre `index.html`.
