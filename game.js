@@ -7,9 +7,9 @@ let scene,camera,renderer,clock,worldGroup,roadGroup,runnerGroup,petGroup,bossGr
 let state='menu',paused=false,mode='runner',score=0,coinsRun=0,level=1,combo=1,comboT=0,mult=1,multT=0,shield=0,timeLeft=90,spawnT=0,spawnI=0;
 let objects=[],items=[],particles=[],boss=null,shopTab='characters',musicTimer=null,musicStep=0;
 const pointer={down:false,sx:0,sy:0};
-const player={x:0,targetX:0,jump:0,vy:0,run:0};
+const player={x:0,targetX:0,z:0,jump:0,vy:0,run:0,distance:0};
 const defaultSave={coins:900,gems:20,best:0,xp:0,totalGames:0,totalCoins:0,bosses:0,character:'nova',pet:'orb',world:'space',ownedCharacters:['nova','ninja'],ownedPets:['orb'],ownedWorlds:['space'],claimedPass:[],claimedAchievements:[],daily:0,music:true,sfx:true,vib:true,low:false,sensitivity:52,missions:{coins:0,jumps:0,boss:0,games:0,score:0}};
-const save=Object.assign({},defaultSave,JSON.parse(localStorage.getItem('cb12')||'null')||{});
+const save=Object.assign({},defaultSave,JSON.parse(localStorage.getItem('cb121')||'null')||{});
 save.missions=Object.assign({},defaultSave.missions,save.missions||{});
 
 const palette=['#2fe8ff','#8757ff','#ff4d7a','#ffb52f','#42e57b','#7fd6ff','#f58cff','#d8e4ff'];
@@ -44,7 +44,7 @@ const achievements=[
 {id:'score',name:'Imparable',desc:'Alcanza 5.000 puntos',reward:150,test:()=>save.best>=5000}
 ];
 
-function persist(){localStorage.setItem('cb12',JSON.stringify(save))}
+function persist(){localStorage.setItem('cb121',JSON.stringify(save))}
 function show(el){screens.forEach(s=>s.classList.add('hidden'));el.classList.remove('hidden')}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),1000)}
 function char(){return characters.find(v=>v.id===save.character)||characters[0]}
@@ -75,11 +75,62 @@ function meshBox(sx,sy,sz,mat){let m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,
 function meshSphere(r,mat,seg=24){let m=new THREE.Mesh(new THREE.SphereGeometry(r,seg,seg),mat);m.castShadow=true;m.receiveShadow=true;return m}
 function clearGroup(g){while(g.children.length){let o=g.children.pop();o.traverse?.(n=>{n.geometry?.dispose?.();if(n.material){Array.isArray(n.material)?n.material.forEach(m=>m.dispose()):n.material.dispose()}})}}
 function rebuildWorld(){
- clearGroup(worldGroup);clearGroup(roadGroup);let w=world();scene.background=new THREE.Color(w.bg);scene.fog=new THREE.Fog(w.fog,18,70);
- let ground=meshBox(12,.5,90,material(w.ground,.1,.85));ground.position.set(0,-.25,-36);roadGroup.add(ground);
- for(let z=-75;z<10;z+=3){let line=meshBox(.08,.025,1.2,material(w.accent,.6,.25,w.accent,1.5));line.position.set(-1.8,.02,z);roadGroup.add(line);let line2=line.clone();line2.position.x=1.8;roadGroup.add(line2)}
- for(let z=-80;z<8;z+=5){for(const side of [-1,1]){let post=meshBox(.18,1.8,.18,material(w.accent,.5,.25,w.accent,1.2));post.position.set(side*5.2,.9,z);roadGroup.add(post);let orb=meshSphere(.22,material(0xffffff,.2,.15,w.accent,2));orb.position.set(side*5.2,1.9,z);roadGroup.add(orb)}}
- for(let i=0;i<18;i++){let s=meshBox(1+Math.random()*1.6,1+Math.random()*2.5,1+Math.random()*1.6,material(0x1d2745,.2,.8));s.position.set((Math.random()<.5?-1:1)*(6+Math.random()*8),s.scale.y/2,-8-Math.random()*70);s.rotation.y=Math.random()*Math.PI;worldGroup.add(s)}
+ clearGroup(worldGroup);clearGroup(roadGroup);
+ const w=world();
+ scene.background=new THREE.Color(w.bg);
+ scene.fog=new THREE.Fog(w.fog,25,105);
+
+ // Long road so the player really travels through 3D space.
+ const ground=meshBox(12,.5,4200,material(w.ground,.12,.82));
+ ground.position.set(0,-.25,-2090);
+ roadGroup.add(ground);
+
+ // Lane markers rendered with InstancedMesh for high performance.
+ const markerGeo=new THREE.BoxGeometry(.08,.028,1.35);
+ const markerMat=material(w.accent,.65,.22,w.accent,1.8);
+ const markerCount=1400;
+ const markers=new THREE.InstancedMesh(markerGeo,markerMat,markerCount);
+ markers.castShadow=false;markers.receiveShadow=true;
+ const dummy=new THREE.Object3D();
+ let mi=0;
+ for(let z=16;z>-2080;z-=3){
+  for(const x of [-1.8,1.8]){
+   dummy.position.set(x,.02,z);dummy.updateMatrix();markers.setMatrixAt(mi++,dummy.matrix);
+  }
+ }
+ markers.count=mi;roadGroup.add(markers);
+
+ // Side lights and luminous tops.
+ const postGeo=new THREE.BoxGeometry(.18,1.8,.18);
+ const postMat=material(w.accent,.55,.25,w.accent,1.2);
+ const orbGeo=new THREE.SphereGeometry(.22,14,14);
+ const orbMat=material(0xffffff,.25,.16,w.accent,2.3);
+ const count=540;
+ const posts=new THREE.InstancedMesh(postGeo,postMat,count);
+ const orbs=new THREE.InstancedMesh(orbGeo,orbMat,count);
+ let ii=0;
+ for(let z=14;z>-2080;z-=8){
+  for(const x of [-5.2,5.2]){
+   dummy.position.set(x,.9,z);dummy.updateMatrix();posts.setMatrixAt(ii,dummy.matrix);
+   dummy.position.set(x,1.9,z);dummy.updateMatrix();orbs.setMatrixAt(ii,dummy.matrix);
+   ii++;
+  }
+ }
+ posts.count=ii;orbs.count=ii;roadGroup.add(posts,orbs);
+
+ // High-definition scenery distributed along the route.
+ for(let i=0;i<190;i++){
+  const height=1.2+Math.random()*5;
+  const prop=meshBox(
+   1+Math.random()*2.4,
+   height,
+   1+Math.random()*2.4,
+   material(i%3===0?w.accent:0x1d2745,.2,.72,i%3===0?w.accent:0x000000,i%3===0?.28:0)
+  );
+  prop.position.set((Math.random()<.5?-1:1)*(6+Math.random()*10),height/2,-10-Math.random()*2050);
+  prop.rotation.y=Math.random()*Math.PI;
+  worldGroup.add(prop);
+ }
 }
 function createRunnerModel(){
  let c=char(),g=new THREE.Group(),bodyMat=material(c.color,.2,.35),accentMat=material(c.accent,.25,.3,c.accent,.25),dark=material(0x11131a,.15,.5);
@@ -100,41 +151,172 @@ function createRunnerModel(){
 function createPetModel(){
  let p=pet(),g=new THREE.Group(),m=material(p.color,.15,.35,p.color,.15);let body=meshSphere(.3,m);g.add(body);let head=meshSphere(.22,m);head.position.y=.35;g.add(head);for(const sx of [-1,1]){let ear=meshBox(.1,.2,.1,m);ear.position.set(sx*.16,.62,0);g.add(ear);let leg=meshBox(.1,.25,.12,m);leg.position.set(sx*.18,-.28,0);g.add(leg)}return g;
 }
-function rebuildRunner(){if(runnerGroup)scene.remove(runnerGroup);if(petGroup)scene.remove(petGroup);runnerGroup=createRunnerModel();petGroup=createPetModel();scene.add(runnerGroup,petGroup);runnerGroup.position.set(0,0,4);petGroup.position.set(.9,.8,4.4)}
+function rebuildRunner(){if(runnerGroup)scene.remove(runnerGroup);if(petGroup)scene.remove(petGroup);runnerGroup=createRunnerModel();petGroup=createPetModel();scene.add(runnerGroup,petGroup);runnerGroup.position.set(0,0,0);petGroup.position.set(.9,.8,.4)}
 function createObstacle(type,x,z){
  let g=new THREE.Group(),mat;
  if(type==='rock'){mat=material(0x5b6070,.1,.9);for(let i=0;i<4;i++){let s=meshSphere(.35+Math.random()*.25,mat,16);s.position.set((Math.random()-.5)*.4,(Math.random()-.2)*.35,(Math.random()-.5)*.4);s.scale.set(1,.7+Math.random()*.5,1);g.add(s)}}
  if(type==='crate'){mat=material(0x7b421d,.1,.65);let b=meshBox(1.1,1.1,1.1,mat);g.add(b);let band=meshBox(1.15,.12,1.15,material(0xe9b24b,.25,.35));g.add(band)}
  if(type==='drone'){mat=material(0x69788e,.6,.25);let b=meshBox(.9,.4,.75,mat);g.add(b);for(const sx of [-1,1]){let wing=meshBox(.8,.08,.25,material(0x298dff,.5,.2,0x298dff,1));wing.position.x=sx*.75;g.add(wing)}let eye=meshSphere(.12,material(0xff224d,.2,.15,0xff224d,2));eye.position.set(0,0,-.45);g.add(eye)}
  if(type==='laser'){let base=meshBox(1.5,.45,.45,material(0x202536,.4,.3));g.add(base);let beam=meshBox(1.35,.08,.08,material(0xff1f93,.3,.15,0xff1f93,3));beam.position.set(0,.15,-.28);g.add(beam)}
+ if(type==='meteor'){
+  const core=material(0x5b3440,.18,.8,0xff3b12,.35);
+  for(let i=0;i<6;i++){
+   const rock=meshSphere(.28+Math.random()*.32,core,18);
+   rock.position.set((Math.random()-.5)*.65,(Math.random()-.25)*.55,(Math.random()-.5)*.65);
+   rock.scale.set(1,.7+Math.random()*.5,1);
+   g.add(rock);
+  }
+  const glow=meshSphere(.18,material(0xffd06a,.15,.2,0xff4a13,3),18);
+  glow.position.set(0,.08,-.35);g.add(glow);
+ }
  g.position.set(x,.6,z);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});scene.add(g);objects.push({type,mesh:g,x,z,w:type==='laser'?1.4:.8,h:type==='drone'?1.4:1});return g;
 }
 function createItem(type,x,z){
  let mat=type==='coin'?material(0xffc51f,.8,.2,0xffc51f,1.4):type==='shield'?material(0x21ff78,.35,.2,0x21ff78,1.2):material(0xa04cff,.4,.2,0xa04cff,1.2);
  let g=new THREE.Mesh(new THREE.TorusGeometry(.28,.09,14,28),mat);g.position.set(x,.8,z);g.castShadow=true;scene.add(g);items.push({type,mesh:g,x,z});return g;
 }
-function createBoss(){bossGroup=new THREE.Group();let mat=material(0x9c1234,.35,.3),acc=material(world().accent,.5,.2,world().accent,1.4);let body=meshBox(2.5,3.2,2.1,mat);body.position.y=1.6;bossGroup.add(body);let head=meshSphere(.9,acc,32);head.position.y=3.7;bossGroup.add(head);for(const sx of [-1,1]){let arm=meshBox(.55,2.5,.55,mat);arm.position.set(sx*1.6,1.7,0);bossGroup.add(arm)}bossGroup.position.set(0,0,-30);scene.add(bossGroup);boss={mesh:bossGroup,hp:20,max:20};toast('JEFE 3D')}
-function start(m){mode=m;state='play';paused=false;score=0;coinsRun=0;level=1;combo=1;comboT=0;mult=1;multT=0;shield=0;timeLeft=90;spawnT=0;spawnI=500;objects.forEach(o=>scene.remove(o.mesh));items.forEach(i=>scene.remove(i.mesh));objects=[];items=[];if(bossGroup){scene.remove(bossGroup);bossGroup=null;boss=null}player.x=player.targetX=0;player.jump=0;player.vy=0;player.run=0;screens.forEach(s=>s.classList.add('hidden'));$('hud').classList.remove('hidden');$('power').classList.remove('hidden');startMusic();if(m==='boss')createBoss();toast('THREE.JS 3D')}
+function createBoss(){bossGroup=new THREE.Group();let mat=material(0x9c1234,.35,.3),acc=material(world().accent,.5,.2,world().accent,1.4);let body=meshBox(2.5,3.2,2.1,mat);body.position.y=1.6;bossGroup.add(body);let head=meshSphere(.9,acc,32);head.position.y=3.7;bossGroup.add(head);for(const sx of [-1,1]){let arm=meshBox(.55,2.5,.55,mat);arm.position.set(sx*1.6,1.7,0);bossGroup.add(arm)}bossGroup.position.set(0,0,player.z-32);scene.add(bossGroup);boss={mesh:bossGroup,hp:20,max:20};toast('JEFE 3D')}
+function start(m){mode=m;state='play';paused=false;score=0;coinsRun=0;level=1;combo=1;comboT=0;mult=1;multT=0;shield=0;timeLeft=90;spawnT=0;spawnI=500;objects.forEach(o=>scene.remove(o.mesh));items.forEach(i=>scene.remove(i.mesh));objects=[];items=[];if(bossGroup){scene.remove(bossGroup);bossGroup=null;boss=null}player.x=player.targetX=0;player.z=0;player.distance=0;player.jump=0;player.vy=0;player.run=0;screens.forEach(s=>s.classList.add('hidden'));$('hud').classList.remove('hidden');$('power').classList.remove('hidden');startMusic();if(m==='boss')createBoss();toast('AVANCE 3D REAL')}
 function home(){state='menu';paused=false;stopMusic();$('hud').classList.add('hidden');$('power').classList.add('hidden');$('bossbar').classList.add('hidden');renderAll();show($('menu'))}
 function finish(){if(state!=='play')return;state='over';stopMusic();save.best=Math.max(save.best,Math.floor(score));save.coins+=coinsRun;save.totalCoins+=coinsRun;save.totalGames++;save.xp+=Math.floor(score/9)+coinsRun*3;save.missions.games++;save.missions.coins+=coinsRun;save.missions.score=Math.max(save.missions.score,Math.floor(score));persist();$('hud').classList.add('hidden');$('power').classList.add('hidden');$('bossbar').classList.add('hidden');$('result').textContent=`Puntos ${Math.floor(score)} · Monedas +${coinsRun} · Nivel ${level} · Récord ${save.best}`;show($('over'))}
 function updateHud(){$('score').textContent=Math.floor(score);$('coins').textContent=coinsRun;$('level').textContent=level;$('combo').textContent='x'+combo;$('power').textContent='x'+mult+(shield?' · 🛡️':'')+(mode==='timed'?' · '+Math.ceil(timeLeft):'');if(boss){$('bossbar').classList.remove('hidden');$('bossName').textContent='TITÁN 3D';$('bossHp').style.width=(boss.hp/boss.max*100)+'%'}else $('bossbar').classList.add('hidden')}
 function update(dt){
  if(state!=='play'||paused)return;
- score+=dt*12*mult*combo;player.run+=dt*8;player.x+=(player.targetX-player.x)*Math.min(1,dt*8*save.sensitivity/52);
- if(player.jump>0||player.vy>0){player.vy-=dt*2.4;player.jump+=player.vy*dt;if(player.jump<=0){player.jump=0;player.vy=0}}
- if(mode==='timed'){timeLeft-=dt;if(timeLeft<=0){finish();return}}
- let nl=1+Math.floor(score/500);if(nl>level){level=nl;toast('NIVEL '+level);if(mode==='runner'&&level%5===0&&!boss)createBoss()}
- if(comboT>0&&(comboT-=dt)<=0)combo=1;if(multT>0&&(multT-=dt)<=0)mult=1;if(shield>0)shield-=dt;
- let speed=7+level*.32;roadGroup.position.z=(roadGroup.position.z+dt*speed)%3;
- for(const o of objects){o.mesh.position.z+=dt*speed;o.z=o.mesh.position.z;o.mesh.rotation.y+=dt*.9}
- for(const it of items){it.mesh.position.z+=dt*speed;it.z=it.mesh.position.z;it.mesh.rotation.y+=dt*2.5}
- if(boss){boss.mesh.position.z+=dt*3.5;if(boss.mesh.position.z>1)boss.mesh.position.z=-25}
- spawnT-=dt;spawnI-=dt;if(spawnT<=0&&!boss){createObstacle(['rock','crate','drone','laser'][Math.floor(Math.random()*4)],(Math.random()*2-1)*3.8,-45);if(level>8&&Math.random()<.3)createObstacle(['rock','crate','drone','laser'][Math.floor(Math.random()*4)],(Math.random()*2-1)*3.8,-48);spawnT=Math.max(.35,1.1-level*.02)}if(spawnI<=0){createItem(Math.random()<.72?'coin':Math.random()<.55?'shield':'mult',(Math.random()*2-1)*3.7,-40);spawnI=.9}
- for(let i=objects.length-1;i>=0;i--){let o=objects[i];if(o.z>10){scene.remove(o.mesh);objects.splice(i,1);continue}if(Math.abs(player.x-o.mesh.position.x)<o.w&&Math.abs(4-o.z)<.9&&player.jump<o.h*.65){if(shield){shield=0;scene.remove(o.mesh);objects.splice(i,1);toast('ESCUDO')}else{finish();return}}}
- for(let i=items.length-1;i>=0;i--){let it=items[i];if(it.z>10){scene.remove(it.mesh);items.splice(i,1);continue}if(Math.abs(player.x-it.mesh.position.x)<.6&&Math.abs(4-it.z)<.9){scene.remove(it.mesh);items.splice(i,1);combo=Math.min(8,combo+1);comboT=2.2;if(it.type==='coin'){coinsRun++;score+=25*mult;beep(720,.04)}else if(it.type==='shield'){shield=9;toast('ESCUDO')}else{mult=[2,3,5][Math.floor(Math.random()*3)];multT=7;toast('x'+mult)}}}
- runnerGroup.position.x=player.x;runnerGroup.position.y=player.jump;runnerGroup.rotation.z=(player.targetX-player.x)*-.08;petGroup.position.set(player.x+.85+Math.cos(performance.now()*.002)*.15,.85+player.jump+Math.sin(performance.now()*.004)*.12,4.4);
- const u=runnerGroup.userData,a=Math.sin(player.run)*.75;u.armL.rotation.x=a;u.armR.rotation.x=-a;u.legL.rotation.x=-a;u.legR.rotation.x=a;u.body.position.y=1.4+Math.abs(Math.sin(player.run))*0.06;u.head.position.y=2.25+Math.abs(Math.sin(player.run))*0.06;
- camera.position.x+=(player.x*.18-camera.position.x)*dt*3;camera.position.y=4.5+Math.sin(performance.now()*.004)*.05;camera.lookAt(player.x*.08,1.15,-8);
+
+ const forwardSpeed=7.5+level*.38;
+ player.z-=forwardSpeed*dt;
+ player.distance+=forwardSpeed*dt;
+ score+=dt*12*mult*combo;
+ player.run+=dt*(9+level*.08);
+ player.x+=(player.targetX-player.x)*Math.min(1,dt*8*save.sensitivity/52);
+
+ if(player.jump>0||player.vy>0){
+  player.vy-=dt*2.4;
+  player.jump+=player.vy*dt;
+  if(player.jump<=0){player.jump=0;player.vy=0}
+ }
+
+ if(mode==='timed'){
+  timeLeft-=dt;
+  if(timeLeft<=0){finish();return}
+ }
+
+ const nl=1+Math.floor(score/500);
+ if(nl>level){
+  level=nl;toast('NIVEL '+level);
+  if(mode==='runner'&&level%5===0&&!boss)createBoss();
+ }
+
+ if(comboT>0&&(comboT-=dt)<=0)combo=1;
+ if(multT>0&&(multT-=dt)<=0)mult=1;
+ if(shield>0)shield-=dt;
+
+ // Objects stay in world coordinates. The player runs toward them.
+ for(const o of objects){
+  o.z=o.mesh.position.z;
+  o.mesh.rotation.y+=dt*(o.type==='meteor'?2.1:.9);
+  if(o.type==='meteor')o.mesh.rotation.x+=dt*1.35;
+ }
+ for(const it of items){
+  it.z=it.mesh.position.z;
+  it.mesh.rotation.y+=dt*2.5;
+  it.mesh.position.y=.8+Math.sin(performance.now()*.004+it.x)*.12;
+ }
+ if(boss){
+  boss.mesh.rotation.y=Math.sin(performance.now()*.001)*.18;
+  boss.mesh.position.x=Math.sin(performance.now()*.0015)*1.8;
+ }
+
+ spawnT-=dt;
+ spawnI-=dt;
+ if(spawnT<=0&&!boss){
+  const obstacleTypes=['rock','crate','drone','laser','meteor'];
+  createObstacle(
+   obstacleTypes[Math.floor(Math.random()*obstacleTypes.length)],
+   (Math.random()*2-1)*3.8,
+   player.z-42-Math.random()*10
+  );
+  if(level>8&&Math.random()<.34){
+   createObstacle(
+    obstacleTypes[Math.floor(Math.random()*obstacleTypes.length)],
+    (Math.random()*2-1)*3.8,
+    player.z-48-Math.random()*9
+   );
+  }
+  spawnT=Math.max(.35,1.08-level*.02);
+ }
+ if(spawnI<=0){
+  createItem(
+   Math.random()<.72?'coin':Math.random()<.55?'shield':'mult',
+   (Math.random()*2-1)*3.7,
+   player.z-34-Math.random()*10
+  );
+  spawnI=.78;
+ }
+
+ // Collision is now based on the player's real Z position.
+ for(let i=objects.length-1;i>=0;i--){
+  const o=objects[i];
+  if(o.z>player.z+12){
+   scene.remove(o.mesh);objects.splice(i,1);continue;
+  }
+  if(
+   Math.abs(player.x-o.mesh.position.x)<o.w &&
+   Math.abs(player.z-o.z)<.9 &&
+   player.jump<o.h*.65
+  ){
+   if(shield){
+    shield=0;scene.remove(o.mesh);objects.splice(i,1);toast('ESCUDO');
+   }else{
+    finish();return;
+   }
+  }
+ }
+
+ for(let i=items.length-1;i>=0;i--){
+  const it=items[i];
+  if(it.z>player.z+12){
+   scene.remove(it.mesh);items.splice(i,1);continue;
+  }
+  if(Math.abs(player.x-it.mesh.position.x)<.6&&Math.abs(player.z-it.z)<.9){
+   scene.remove(it.mesh);items.splice(i,1);
+   combo=Math.min(8,combo+1);comboT=2.2;
+   if(it.type==='coin'){coinsRun++;score+=25*mult;beep(720,.04)}
+   else if(it.type==='shield'){shield=9;toast('ESCUDO')}
+   else{mult=[2,3,5][Math.floor(Math.random()*3)];multT=7;toast('x'+mult)}
+  }
+ }
+
+ if(boss&&Math.abs(player.z-boss.mesh.position.z)<2.2&&Math.abs(player.x-boss.mesh.position.x)<1.7&&player.jump<1.1){
+  if(shield){shield=0;boss.mesh.position.z=player.z-28;toast('GOLPE BLOQUEADO')}
+  else{finish();return}
+ }
+
+ // Character and pet travel through the actual 3D world.
+ runnerGroup.position.set(player.x,player.jump,player.z);
+ runnerGroup.rotation.z=(player.targetX-player.x)*-.08;
+ petGroup.position.set(
+  player.x+.85+Math.cos(performance.now()*.002)*.15,
+  .85+player.jump+Math.sin(performance.now()*.004)*.12,
+  player.z+.45
+ );
+
+ const u=runnerGroup.userData,a=Math.sin(player.run)*.78;
+ u.armL.rotation.x=a;u.armR.rotation.x=-a;
+ u.legL.rotation.x=-a;u.legR.rotation.x=a;
+ u.body.position.y=1.4+Math.abs(Math.sin(player.run))*.07;
+ u.head.position.y=2.25+Math.abs(Math.sin(player.run))*.07;
+
+ // Third-person chase camera follows the forward movement.
+ const desiredCameraZ=player.z+8.7;
+ camera.position.x+=(player.x*.2-camera.position.x)*dt*4;
+ camera.position.y=4.5+Math.sin(performance.now()*.004)*.05;
+ camera.position.z+=(desiredCameraZ-camera.position.z)*Math.min(1,dt*7);
+ camera.lookAt(player.x*.09,1.2,player.z-9);
+
+ keyLight.position.set(player.x+5,player.jump+9,player.z+7);
+ rimLight.position.set(player.x-4,player.jump+4,player.z+2);
+
  updateHud();
 }
 function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.033);update(dt);renderer.render(scene,camera)}

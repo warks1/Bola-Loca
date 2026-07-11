@@ -1,16 +1,16 @@
-# Crazy Ball Ultimate v12 Three.js 3D
+# Crazy Ball Ultimate v12.1 Touch Forward
 
-## Novedades
-- Motor Three.js con cámara 3D real.
-- Sombras suaves, iluminación direccional, luz ambiental y luz de contorno.
-- Nieblas y colores distintos por mundo.
-- Personajes 3D con accesorios según su familia.
-- Más de 200 personajes originales.
-- Más de 150 mascotas originales.
-- Obstáculos y jefes 3D con materiales y sombras.
-- Movimiento libre arrastrando el dedo.
+## Correcciones
+- No existen botones de dirección en la pantalla de juego.
+- Control lateral exclusivamente táctil arrastrando el dedo.
+- El personaje avanza físicamente por el eje Z del mundo 3D.
+- La cámara sigue al personaje desde atrás.
+- Monedas, ventajas, obstáculos y meteoritos aparecen realmente delante.
+- Las colisiones utilizan las coordenadas reales del personaje.
 - Gesto hacia arriba para saltar.
-- Mantiene mundos, pase, misiones, logros, tienda, perfil, ranking y ajustes.
+- Carretera 3D de larga distancia con marcadores y luces instanciadas.
+- Meteoritos 3D añadidos como obstáculo.
+- Se mantienen personajes, mascotas, mundos, tienda, pase, misiones, logros, perfil, ranking, música y ajustes.
 
 ## Importante
-Esta beta carga Three.js desde Internet. El dispositivo debe estar conectado al abrir `index.html`.
+La beta carga Three.js desde Internet. Abre `index.html` con conexión activa.
