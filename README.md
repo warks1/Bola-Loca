@@ -1,13 +1,20 @@
-# Crazy Ball v10.1 HD Skins & Pets
+# Crazy Ball v10.2 HD Realism
 
-## Cambios principales
-- La bola queda 125 px por encima del dedo.
-- Guía táctil tenue para indicar dónde se está pulsando.
-- 20 skins de bola con iconos temáticos.
-- 16 mascotas distintas con bonificaciones.
-- Obstáculos redibujados con volumen, luces, sombras y detalles.
-- Monedas y potenciadores con aspecto más definido.
-- Conserva todos los sistemas funcionales de la demo v10.
+## Correcciones
+- Botón de pausa corregido para funcionar con toque y clic.
+- El control táctil ya no bloquea los botones de la interfaz.
+- Reanudación de partida más estable.
 
-## Cómo jugar
+## Equilibrio
+- Las ventajas aparecen con mucha más separación.
+- Mayor proporción de monedas frente a poderes.
+- Tiempo entre ventajas especiales aumentado.
+
+## Gráficos
+- Fondo con nebulosas, iluminación móvil, rejilla de profundidad y viñeta.
+- Obstáculos con sombras, reflejos y más detalles mecánicos.
+- Drones y satélites con piezas, luces y antenas mejor definidas.
+- Mayor sensación de volumen y profundidad.
+
+## Uso
 Descomprime el ZIP y abre `index.html`.
