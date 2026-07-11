@@ -1,24 +1,14 @@
-# Crazy Ball Ultimate v11.2 3D Complete
+# Crazy Ball Ultimate v11.3 True Motion
 
-## Recuperado de versiones anteriores
-- Personajes y mascotas.
-- Mundos desbloqueables.
-- Tienda completa.
-- Pase de temporada.
-- Misiones.
-- Logros.
-- Perfil y estadísticas.
-- Ranking global, semanal y amigos.
-- Eventos.
-- Premio diario.
-- Ajustes de música, efectos, vibración, sensibilidad y gráficos.
-- Jefes, monedas, potenciadores y dificultad progresiva.
+## Corrección principal
+- Controles táctiles visibles: izquierda, derecha y salto.
+- Arrastre táctil conservado.
+- Control con teclado.
+- Personaje con carrera y balanceo más visibles.
+- Carretera, líneas, postes, cámara y escenario avanzan continuamente.
+- Cámara con inclinación lateral.
+- Movimiento mucho más evidente desde el primer segundo.
+- Se mantienen mundos, música, pase, misiones, logros, tienda, perfil y ranking.
 
-## Mejoras
-- Música dinámica distinta por mundo.
-- Gráficos 3D estilizados más vivos.
-- Iluminación y meteoritos ambientales.
-- Dificultad aumentada y niveles más rápidos.
-
-## Uso
+## Cómo jugar
 Descomprime el ZIP y abre `index.html`.
