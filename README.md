@@ -1,21 +1,24 @@
-# Crazy Ball Ultimate v11.0 3D Beta
+# Crazy Ball Ultimate v11.2 3D Complete
 
-Beta web jugable en un único archivo, sin librerías externas.
+## Recuperado de versiones anteriores
+- Personajes y mascotas.
+- Mundos desbloqueables.
+- Tienda completa.
+- Pase de temporada.
+- Misiones.
+- Logros.
+- Perfil y estadísticas.
+- Ranking global, semanal y amigos.
+- Eventos.
+- Premio diario.
+- Ajustes de música, efectos, vibración, sensibilidad y gráficos.
+- Jefes, monedas, potenciadores y dificultad progresiva.
 
-## Incluye
-- Escenario 3D estilizado con perspectiva y profundidad.
-- Personajes completos en lugar de una bola.
-- 12 personajes y 8 mascotas iniciales.
-- Tienda, selección y guardado local.
-- Tres modos: carrera, contrarreloj y cazajefes.
-- Movimiento por carriles, salto, monedas, poderes, obstáculos y jefes.
-- Pausa funcional separada del control de juego.
-- Misiones, premio diario, sonido, vibración y ajustes.
+## Mejoras
+- Música dinámica distinta por mundo.
+- Gráficos 3D estilizados más vivos.
+- Iluminación y meteoritos ambientales.
+- Dificultad aumentada y niveles más rápidos.
 
-## Cómo jugar
-1. Descomprime el ZIP.
-2. Abre `index.html` en Safari, Chrome, Edge o Firefox.
-3. Desliza a izquierda o derecha para cambiar de carril.
-4. Pulsa o desliza hacia arriba para saltar.
-
-Esta beta usa 3D estilizado mediante Canvas con perspectiva para funcionar sin conexión y sin dependencias externas.
+## Uso
+Descomprime el ZIP y abre `index.html`.
