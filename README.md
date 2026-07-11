@@ -1,16 +1,15 @@
-# Crazy Ball Ultimate v12.1 Touch Forward
+# Crazy Ball Ultimate v13 Infinity
 
-## Correcciones
-- No existen botones de dirección en la pantalla de juego.
-- Control lateral exclusivamente táctil arrastrando el dedo.
-- El personaje avanza físicamente por el eje Z del mundo 3D.
-- La cámara sigue al personaje desde atrás.
-- Monedas, ventajas, obstáculos y meteoritos aparecen realmente delante.
-- Las colisiones utilizan las coordenadas reales del personaje.
-- Gesto hacia arriba para saltar.
-- Carretera 3D de larga distancia con marcadores y luces instanciadas.
-- Meteoritos 3D añadidos como obstáculo.
-- Se mantienen personajes, mascotas, mundos, tienda, pase, misiones, logros, perfil, ranking, música y ajustes.
+## Novedades
+- Multiplicadores completamente aleatorios: x2, x3, x5, x10, x20, x50, x100, x250, x500 y x1000.
+- Los valores altos son más raros y tienen efectos especiales.
+- Puede aparecer más de un multiplicador a la vez.
+- Director dinámico que adapta la frecuencia de obstáculos.
+- Eventos aleatorios: lluvia de monedas, tormenta de meteoritos, oleada de ventajas, baja gravedad y alerta de jefe.
+- Nuevos obstáculos 3D: sierra, portal, hélice y meteorito.
+- Música dinámica y mundos animados conservados.
+- Control táctil por arrastre, sin botones de dirección.
+- Personajes, mascotas, tienda, pase, misiones, logros, perfil, ranking y ajustes conservados.
 
 ## Importante
-La beta carga Three.js desde Internet. Abre `index.html` con conexión activa.
+Three.js se carga desde Internet. Abre `index.html` con conexión activa.

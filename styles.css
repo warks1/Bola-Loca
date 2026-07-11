@@ -30,3 +30,22 @@ h1{font-size:40px;line-height:.95;margin:5px 0 8px;font-weight:1000}.sub{color:v
 .rankrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #ffffff13}.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.statCard{padding:13px;border-radius:16px;background:#131a31;border:1px solid #ffffff17}.statCard b{display:block;font-size:24px}
 .bottom{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 7px);text-align:center;font-size:11px;color:#c3cbed;font-weight:800}
 .news{padding:13px;border-radius:18px;background:linear-gradient(135deg,#20325d,#381950);border:1px solid #ffffff18;margin:9px 0;text-align:left}
+
+.screen::before,.screen::after{
+ content:"";position:absolute;border-radius:50%;filter:blur(55px);opacity:.28;pointer-events:none;
+ animation:menuGlow 7s ease-in-out infinite alternate
+}
+.screen::before{width:270px;height:270px;background:#2fe8ff;left:-110px;top:8%}
+.screen::after{width:320px;height:320px;background:#a04cff;right:-140px;bottom:3%;animation-delay:-2.5s}
+@keyframes menuGlow{to{transform:translate3d(45px,35px,0) scale(1.18);opacity:.42}}
+.card{position:relative;isolation:isolate;background:linear-gradient(145deg,rgba(10,17,43,.94),rgba(20,10,45,.9));box-shadow:0 34px 120px #000d,0 0 55px #32e9ff18}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,#ffffff45,#32e9ff33,#a04cff33);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.btn{transition:transform .12s ease,filter .12s ease;letter-spacing:.2px}
+.btn:active{transform:scale(.97);filter:brightness(1.18)}
+.itemCard small{display:block;margin-top:4px;color:#bfcaf0;font-size:11px}
+.priceTag{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:999px;background:linear-gradient(90deg,#ffb900,#ff7148);color:#fff;font-size:10px;font-weight:1000}
+
+.eventBanner{position:absolute;top:calc(env(safe-area-inset-top) + 108px);left:50%;transform:translateX(-50%) scale(.92);z-index:9;padding:10px 16px;border-radius:999px;background:linear-gradient(90deg,#ff7b00dd,#ff2f8add,#7d4dffdd);border:1px solid #ffffff55;font-weight:1000;opacity:0;transition:.22s;box-shadow:0 0 32px #ff4d8b66;white-space:nowrap}
+.eventBanner.show{opacity:1;transform:translateX(-50%) scale(1)}
+.rareFlash{animation:rareFlash .45s ease 2}
+@keyframes rareFlash{50%{filter:brightness(1.8);box-shadow:0 0 70px #fff}}
