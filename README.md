@@ -1,11 +1,11 @@
-# Crazy Ball v10.3 Pause Fix
+# Crazy Ball v10.4 Control Rebuild
 
-## Correcciones
-- El botón de pausa está completamente separado del control de la bola.
-- El toque dentro o alrededor del botón no mueve la bola.
-- Se usan eventos táctiles, de puntero y clic con captura.
-- Al pausar se desactiva inmediatamente la guía táctil.
-- La bola ahora se sitúa 95 px por encima del dedo, en lugar de 125 px.
+## Cambios
+- El movimiento de la bola solo escucha eventos sobre el canvas del juego.
+- Los botones ya no comparten eventos con el control táctil.
+- El botón de pausa abre la pantalla de pausa sin mover la bola.
+- La bola queda 38 px por encima del dedo, mucho más cerca.
+- Control unificado con Pointer Events para iPhone, Android, ratón y lápiz.
 
 ## Uso
 Descomprime el ZIP y abre `index.html`.
