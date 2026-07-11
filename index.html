@@ -1,31 +1,400 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Crazy Ball Demo</title>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#050816">
+<title>Crazy Ball v10 Full Demo</title>
 <style>
-body{margin:0;background:linear-gradient(#102347,#050913);font-family:Arial;color:#fff;overflow:hidden}
-.panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-background:rgba(0,0,0,.45);padding:24px;border-radius:18px;width:min(90vw,520px)}
-button{display:block;width:100%;margin:8px 0;padding:14px;border:0;border-radius:12px;background:#2f7cff;color:#fff;font-size:18px}
-.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%}
-</style></head><body>
-<div id="stars"></div>
-<div class="panel">
-<h1>Crazy Ball v10 Demo Concept</h1>
-<p>Concepto del nuevo menú comercial.</p>
-<button onclick="alert('Modo Historia en desarrollo')">▶ Jugar</button>
-<button onclick="alert('Multijugador Online en desarrollo')">🌍 Multijugador</button>
-<button onclick="alert('Sistema de Skins HD')">👕 Skins</button>
-<button onclick="alert('Pase de temporada')">🎟 Pase de temporada</button>
-<button onclick="alert('Misiones y Eventos')">🎯 Misiones</button>
+:root{
+ --cyan:#27e7ff;--blue:#4074ff;--purple:#a64eff;--gold:#ffd84f;
+ --red:#ff4e70;--green:#66ff9d;--panel:rgba(7,11,29,.92);--line:#ffffff1e
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030511;color:#fff;
+font-family:Inter,Arial,sans-serif;touch-action:none;overscroll-behavior:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#ui{position:fixed;inset:0;pointer-events:none}
+.hidden{display:none!important}
+.screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;
+pointer-events:auto;z-index:10;background:radial-gradient(circle at 50% 8%,rgba(39,231,255,.18),rgba(3,5,17,.94) 58%)}
+.card{width:min(96vw,590px);max-height:95vh;overflow:auto;padding:20px;border-radius:28px;
+background:var(--panel);border:1px solid var(--line);box-shadow:0 28px 100px #000c;
+backdrop-filter:blur(15px);text-align:center}
+.logoWrap{position:relative;width:116px;height:116px;margin:0 auto 10px}
+.logoBall{position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle at 28% 22%,#fff 0 7%,var(--cyan) 16%,var(--blue) 48%,var(--purple) 78%);
+box-shadow:0 0 42px var(--cyan),inset -18px -22px 28px #0006;animation:float 2.1s ease-in-out infinite}
+.logoRing{position:absolute;inset:0;border:2px solid #ffffff22;border-top-color:var(--cyan);border-radius:50%;animation:spin 5s linear infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(8deg)}}@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:40px;line-height:.96;margin:5px 0 7px;font-weight:1000}.sub{color:var(--cyan);font-weight:1000;margin-bottom:9px}
+.desc{color:#d1daf8;line-height:1.4;font-weight:700}.muted{color:#9eabd6;font-size:12px}
+.btn{width:100%;border:0;border-radius:18px;padding:14px 11px;margin:5px 0;font-size:17px;font-weight:1000;
+color:#fff;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shadow:0 10px 28px #27e7ff2b}
+.btn:active{transform:scale(.985)}.btn.secondary{background:#202741;border:1px solid #ffffff18;box-shadow:none}
+.btn.gold{background:linear-gradient(90deg,#ffb600,#ff7249)}.btn.red{background:linear-gradient(90deg,#ff4e70,#ff7b60)}
+.btn.green{background:linear-gradient(90deg,#21c973,#63f58f)}.btn[disabled]{opacity:.42}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.wide{grid-column:1/-1}
+.topbar{position:absolute;top:calc(env(safe-area-inset-top) + 7px);left:7px;right:7px;display:flex;gap:4px;z-index:6}
+.stat{min-width:52px;padding:7px 5px;border-radius:13px;background:#060a1dcc;border:1px solid #ffffff18;text-align:center;
+box-shadow:0 8px 22px #0008;backdrop-filter:blur(8px)}.stat small{display:block;font-size:8px;color:#b8c5f7;font-weight:1000}.stat b{font-size:16px}
+.spacer{flex:1}.iconBtn{pointer-events:auto;width:46px;height:46px;border:0;border-radius:14px;
+background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;font-weight:1000;font-size:19px}
+.power{position:absolute;top:calc(env(safe-area-inset-top) + 62px);left:50%;transform:translateX(-50%);z-index:6;
+padding:7px 13px;border-radius:999px;background:#071027df;border:1px solid #ffffff22;font-weight:1000;white-space:nowrap}
+.bossbar{position:absolute;top:calc(env(safe-area-inset-top) + 99px);left:10px;right:10px;z-index:6;
+background:#160914df;border:1px solid #ff4e7070;border-radius:14px;padding:7px 10px}
+.progress{height:10px;background:#252d48;border-radius:99px;overflow:hidden;margin-top:7px}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.bossbar .progress i{background:linear-gradient(90deg,#ff4e70,#ffb23f)}
+.toast{position:absolute;top:21%;left:50%;transform:translate(-50%,-8px);z-index:20;padding:11px 17px;border-radius:20px;
+background:#0b1129ee;border:1px solid #ffffff28;font-size:18px;font-weight:1000;opacity:0;transition:.2s;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.box{padding:13px;border:1px solid #ffffff18;border-radius:17px;background:#11172c;margin:8px 0;text-align:left}
+.box b{color:#fff}.box small{color:#aeb9e8}.box.claimed{opacity:.55}
+.mode{padding:13px;border:1px solid #ffffff1d;border-radius:17px;background:#131a31;margin:8px 0;text-align:left}
+.mode h3{margin:0 0 4px}.mode p{margin:0;color:#bec7ed;font-size:13px}
+.skinGrid,.worldGrid,.petGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.skin,.world,.pet{border:1px solid #ffffff20;border-radius:16px;padding:9px 5px;background:#151b31;color:#fff;font-weight:900}
+.skin.active,.world.active,.pet.active{outline:3px solid var(--cyan)}.skin.locked,.world.locked,.pet.locked{opacity:.55}
+.skinBall,.worldIcon,.petIcon{width:46px;height:46px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;font-size:22px;box-shadow:0 0 16px currentColor}
+.worldIcon,.petIcon{border-radius:14px;background:#252d48}
+.rankrow{display:flex;justify-content:space-between;border-bottom:1px solid #ffffff12;padding:8px 0}
+.badge{display:inline-block;margin:3px;padding:5px 8px;border-radius:999px;background:#ffffff10;font-size:11px;font-weight:900}
+.switch{display:flex;align-items:center;justify-content:space-between}.switch input{width:23px;height:23px}
+.bottom{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 6px);text-align:center;font-size:11px;color:#c2cbef;font-weight:800}
+.tabs{display:flex;gap:6px;margin:8px 0}.tab{flex:1;padding:10px;border:0;border-radius:12px;background:#1d243d;color:#fff;font-weight:900}.tab.active{background:linear-gradient(90deg,var(--cyan),var(--purple))}
+.statGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.statCard{padding:12px;border-radius:16px;background:#131a31;border:1px solid #ffffff17}.statCard b{font-size:22px;display:block}
+.news{padding:12px;border-radius:16px;background:linear-gradient(135deg,#1d2b54,#34174f);border:1px solid #ffffff18;margin:8px 0;text-align:left}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="ui">
+ <div id="hud" class="topbar hidden">
+  <div class="stat"><small>PUNTOS</small><b id="score">0</b></div>
+  <div class="stat"><small>MONEDAS</small><b id="coins">0</b></div>
+  <div class="stat"><small>NIVEL</small><b id="level">1</b></div>
+  <div class="stat"><small>COMBO</small><b id="combo">x1</b></div>
+  <div class="spacer"></div><button id="pauseBtn" class="iconBtn">Ⅱ</button>
+ </div>
+ <div id="power" class="power hidden">x1</div>
+ <div id="bossbar" class="bossbar hidden"><b id="bossName">JEFE</b><div class="progress"><i id="bossHp"></i></div></div>
+ <div id="toast" class="toast"></div>
+
+ <div id="menu" class="screen"><div class="card">
+  <div class="logoWrap"><div class="logoRing"></div><div class="logoBall"></div></div>
+  <h1>CRAZY BALL</h1><div class="sub">v10 FULL PLAYABLE DEMO</div>
+  <p class="desc">Arcade de habilidad con mundos, jefes, progresión, colecciones, eventos y competición.</p>
+  <div id="newsBox" class="news"></div>
+  <button id="playBtn" class="btn">▶ JUGAR</button>
+  <div class="grid">
+   <button id="multiBtn" class="btn secondary">🌍 MULTIJUGADOR</button>
+   <button id="worldsBtn" class="btn secondary">🪐 MUNDOS</button>
+   <button id="skinsBtn" class="btn secondary">🎨 SKINS</button>
+   <button id="petsBtn" class="btn secondary">🐾 MASCOTAS</button>
+   <button id="passBtn" class="btn secondary">🎟 PASE</button>
+   <button id="missionsBtn" class="btn secondary">🎯 MISIONES</button>
+   <button id="achievementsBtn" class="btn secondary">🏅 LOGROS</button>
+   <button id="shopBtn" class="btn secondary">🛒 TIENDA</button>
+   <button id="profileBtn" class="btn secondary">👤 PERFIL</button>
+   <button id="rankingBtn" class="btn secondary">🏆 RANKING</button>
+   <button id="settingsBtn" class="btn secondary wide">⚙️ AJUSTES</button>
+  </div>
+  <span class="badge">Todos los botones funcionan</span><span class="badge">Guardado automático</span>
+ </div></div>
+
+ <div id="modes" class="screen hidden"><div class="card"><h1>MODOS</h1>
+  <div class="mode"><h3>∞ Supervivencia</h3><p>Dificultad creciente, eventos sorpresa y jefe cada 5 niveles.</p><button class="btn startMode" data-mode="survival">JUGAR</button></div>
+  <div class="mode"><h3>⏱ Contrarreloj</h3><p>Consigue la máxima puntuación en 90 segundos.</p><button class="btn startMode" data-mode="timed">JUGAR</button></div>
+  <div class="mode"><h3>👑 Cazajefes</h3><p>Jefes consecutivos con recompensas superiores.</p><button class="btn startMode" data-mode="bossrush">JUGAR</button></div>
+  <div class="mode"><h3>🧠 Entrenamiento</h3><p>Sin fin de partida: aprende poderes, controles y patrones.</p><button class="btn startMode" data-mode="training">JUGAR</button></div>
+  <button data-back class="btn secondary">VOLVER</button>
+ </div></div>
+
+ <div id="multi" class="screen hidden"><div class="card"><h1>MULTIJUGADOR</h1>
+  <p class="desc">La demo ofrece partidas competitivas funcionales contra rivales inteligentes. El juego online real necesita un servidor de emparejamiento.</p>
+  <div class="mode"><h3>⚔️ Duelo 1 vs 1</h3><p>Gana quien consiga más puntos en 60 segundos.</p><button class="btn multiMode" data-mode="duel">JUGAR</button></div>
+  <div class="mode"><h3>🏁 Carrera de monedas</h3><p>Consigue 25 monedas antes que el rival.</p><button class="btn multiMode" data-mode="coinrace">JUGAR</button></div>
+  <div class="mode"><h3>🤝 Cooperativo</h3><p>Sobrevive junto al bot aliado y suma una puntuación conjunta.</p><button class="btn multiMode" data-mode="coop">JUGAR</button></div>
+  <button data-back class="btn secondary">VOLVER</button>
+ </div></div>
+
+ <div id="worlds" class="screen hidden"><div class="card"><h1>MUNDOS</h1><p class="desc">Cada mundo cambia colores, música, obstáculos y dificultad.</p><div id="worldGrid" class="worldGrid"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+ <div id="skins" class="screen hidden"><div class="card"><h1>SKINS</h1><p class="desc">Selecciona una skin comprada para equiparla.</p><div id="skinGrid" class="skinGrid"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+ <div id="pets" class="screen hidden"><div class="card"><h1>MASCOTAS</h1><p class="desc">Las mascotas dan pequeñas ventajas permanentes.</p><div id="petGrid" class="petGrid"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+
+ <div id="pass" class="screen hidden"><div class="card"><h1>PASE DE TEMPORADA</h1><div id="passInfo"></div><div id="passRewards"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+ <div id="missions" class="screen hidden"><div class="card"><h1>MISIONES</h1><div class="tabs"><button class="tab active missionTab" data-tab="daily">DIARIAS</button><button class="tab missionTab" data-tab="weekly">SEMANALES</button></div><div id="missionList"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+ <div id="achievements" class="screen hidden"><div class="card"><h1>LOGROS</h1><div id="achievementList"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+
+ <div id="shop" class="screen hidden"><div class="card"><h1>TIENDA</h1><p id="wallet" class="desc"></p>
+  <div class="tabs"><button class="tab active shopTab" data-shop="skins">SKINS</button><button class="tab shopTab" data-shop="pets">MASCOTAS</button><button class="tab shopTab" data-shop="boosts">VENTAJAS</button></div>
+  <div id="shopList"></div><button id="dailyBtn" class="btn gold">🎁 PREMIO DIARIO</button><button data-back class="btn secondary">VOLVER</button>
+ </div></div>
+
+ <div id="profile" class="screen hidden"><div class="card"><h1>PERFIL</h1><div id="profileStats" class="statGrid"></div><div id="profileDetails"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+ <div id="ranking" class="screen hidden"><div class="card"><h1>RANKING</h1><div class="tabs"><button class="tab active rankTab" data-rank="global">GLOBAL</button><button class="tab rankTab" data-rank="weekly">SEMANAL</button><button class="tab rankTab" data-rank="friends">AMIGOS</button></div><div id="rankList"></div><button data-back class="btn secondary">VOLVER</button></div></div>
+ <div id="settings" class="screen hidden"><div class="card"><h1>AJUSTES</h1>
+  <div class="box switch"><b>Música</b><input id="musicToggle" type="checkbox"></div>
+  <div class="box switch"><b>Efectos</b><input id="sfxToggle" type="checkbox"></div>
+  <div class="box switch"><b>Vibración</b><input id="vibToggle" type="checkbox"></div>
+  <div class="box switch"><b>Reducir efectos</b><input id="lowFxToggle" type="checkbox"></div>
+  <div class="box"><b>Sensibilidad</b><input id="sensRange" type="range" min="12" max="40" value="28" style="width:100%"></div>
+  <button id="resetBtn" class="btn red">BORRAR PROGRESO</button><button data-back class="btn secondary">VOLVER</button>
+ </div></div>
+
+ <div id="pause" class="screen hidden"><div class="card"><h1>PAUSA</h1><button id="resumeBtn" class="btn">CONTINUAR</button><button id="quitBtn" class="btn secondary">SALIR</button></div></div>
+ <div id="over" class="screen hidden"><div class="card"><h1>RESULTADO</h1><p id="result" class="desc"></p><div id="multiResult" class="box hidden"></div><button id="doubleCoinsBtn" class="btn gold">📺 DUPLICAR MONEDAS</button><button id="retryBtn" class="btn">REINTENTAR</button><button id="homeBtn" class="btn secondary">MENÚ</button></div></div>
+ <div class="bottom">Arrastra el dedo · La bola se mantiene por encima del dedo</div>
 </div>
 <script>
-const s=document.getElementById('stars');
-for(let i=0;i<150;i++){
- let d=document.createElement('div');
- d.className='star';
- d.style.left=Math.random()*100+'vw';
- d.style.top=Math.random()*100+'vh';
- s.appendChild(d);
+(()=>{'use strict';
+const $=id=>document.getElementById(id),c=$('game'),x=c.getContext('2d');
+const screens=['menu','modes','multi','worlds','skins','pets','pass','missions','achievements','shop','profile','ranking','settings','pause','over'].map($);
+let W=0,H=0,D=1,last=0,time=0,state='menu',mode='survival',paused=false;
+let score=0,coinsRun=0,level=1,combo=1,comboT=0,mult=1,multT=0,shield=0,magnet=0,golden=0,slow=0,timeLeft=90;
+let rivalScore=0,allyScore=0,spawnO=0,spawnI=0,spawnP=0,shake=0,flash=0,boss=null,bossIndex=0,eventName='',eventT=0,doubleUsed=false;
+let obstacles=[],items=[],particles=[],stars=[],clouds=[];
+let missionTab='daily',shopTab='skins',rankTab='global';
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const defaultSave={coins:450,gems:25,best:0,totalCoins:0,totalGames:0,totalTime:0,bosses:0,wins:0,xp:0,skin:'neon',world:'space',pet:'none',
+ ownedSkins:['neon'],ownedWorlds:['space'],ownedPets:['none'],claimedPass:[],claimedAchievements:[],daily:0,music:true,sfx:true,vib:true,lowFx:false,sensitivity:28,
+ boosts:{shield:1,magnet:1,golden:0},missions:{coins:0,powers:0,boss:0,games:0,score:0,wins:0}};
+const save=Object.assign({},defaultSave,JSON.parse(localStorage.getItem('cb10full')||'null')||{});
+save.boosts=Object.assign({},defaultSave.boosts,save.boosts||{});save.missions=Object.assign({},defaultSave.missions,save.missions||{});
+const skins=[
+{id:'neon',name:'Neón',icon:'⚡',price:0,rarity:'Común',c1:'#27e7ff',c2:'#4074ff'},
+{id:'fire',name:'Fuego',icon:'🔥',price:220,rarity:'Rara',c1:'#fff27a',c2:'#ff3d00'},
+{id:'ice',name:'Hielo',icon:'❄️',price:260,rarity:'Rara',c1:'#fff',c2:'#29b6f6'},
+{id:'football',name:'Fútbol',icon:'⚽',price:340,rarity:'Épica',c1:'#fff',c2:'#21c55d'},
+{id:'gold',name:'Oro',icon:'👑',price:420,rarity:'Épica',c1:'#fff08a',c2:'#ffad00'},
+{id:'galaxy',name:'Galaxia',icon:'🌌',price:600,rarity:'Legendaria',c1:'#f38cff',c2:'#5734ff'},
+{id:'robot',name:'Robot',icon:'🤖',price:720,rarity:'Legendaria',c1:'#b6f7ff',c2:'#435c7a'},
+{id:'dragon',name:'Dragón',icon:'🐉',price:900,rarity:'Mítica',c1:'#ffbe75',c2:'#9f1239'},
+{id:'rainbow',name:'Arcoíris',icon:'🌈',price:1100,rarity:'Mítica',c1:'#fff',c2:'#d946ef'}];
+const worlds=[
+{id:'space',name:'Espacio',icon:'🌌',price:0,unlock:1,top:'#17376c',bottom:'#1b071f',accent:'#27e7ff'},
+{id:'volcano',name:'Volcán',icon:'🌋',price:300,unlock:5,top:'#5d1720',bottom:'#160606',accent:'#ff7b38'},
+{id:'ice',name:'Hielo',icon:'❄️',price:350,unlock:10,top:'#194d72',bottom:'#071b33',accent:'#85dcff'},
+{id:'jungle',name:'Selva',icon:'🌴',price:450,unlock:15,top:'#174e36',bottom:'#061a11',accent:'#68ff85'},
+{id:'cyber',name:'Cyber',icon:'🏙️',price:600,unlock:20,top:'#241953',bottom:'#05071a',accent:'#ff4df3'},
+{id:'temple',name:'Templo',icon:'🏛️',price:800,unlock:30,top:'#66421f',bottom:'#1b1006',accent:'#ffd075'}];
+const pets=[
+{id:'none',name:'Sin mascota',icon:'➖',price:0,bonus:'Sin bonificación'},
+{id:'orb',name:'Orbe',icon:'🔮',price:300,bonus:'+5% puntuación'},
+{id:'drone',name:'Mini dron',icon:'🛸',price:450,bonus:'+8% monedas'},
+{id:'fox',name:'Zorro cósmico',icon:'🦊',price:650,bonus:'Escudo inicial'},
+{id:'dragon',name:'Mini dragón',icon:'🐲',price:900,bonus:'+10% duración de poderes'}];
+const achievements=[
+{id:'first',name:'Primer paso',desc:'Juega una partida',reward:50,test:()=>save.totalGames>=1},
+{id:'coins100',name:'Coleccionista',desc:'Consigue 100 monedas',reward:75,test:()=>save.totalCoins>=100},
+{id:'boss1',name:'Cazador',desc:'Derrota un jefe',reward:100,test:()=>save.bosses>=1},
+{id:'score5k',name:'Imparable',desc:'Alcanza 5.000 puntos',reward:150,test:()=>save.best>=5000},
+{id:'wins3',name:'Competidor',desc:'Gana 3 duelos',reward:200,test:()=>save.wins>=3},
+{id:'skins5',name:'Colección',desc:'Consigue 5 skins',reward:250,test:()=>save.ownedSkins.length>=5}];
+const ball={x:0,y:0,tx:0,ty:0,r:20,trail:[]};
+function persist(){localStorage.setItem('cb10full',JSON.stringify(save))}
+function resize(){D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;c.width=W*D;c.height=H*D;x.setTransform(D,0,0,D,0,0);
+ if(!stars.length){for(let i=0;i<110;i++)stars.push({x:Math.random()*W,y:Math.random()*H,s:rnd(.3,2),v:rnd(.2,.9)});
+ for(let i=0;i<8;i++)clouds.push({x:rnd(-W,W),y:rnd(80,H*.65),w:rnd(100,260),v:rnd(.04,.14)})}}
+addEventListener('resize',resize);resize();
+function show(el){screens.forEach(s=>s.classList.add('hidden'));el.classList.remove('hidden')}
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.remove('show'),1050)}
+function audioBeep(freq=440,d=.07,type='sine'){if(!save.sfx)return;try{let A=audioBeep.ctx||(audioBeep.ctx=new (AudioContext||webkitAudioContext)()),o=A.createOscillator(),g=A.createGain();o.type=type;o.frequency.value=freq;g.gain.value=.035;o.connect(g);g.connect(A.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,A.currentTime+d);o.stop(A.currentTime+d)}catch(e){}}
+function vibrate(ms=30){if(save.vib&&navigator.vibrate)navigator.vibrate(ms)}
+function playerLevel(){return Math.floor(save.xp/500)+1}
+function seasonLevel(){return Math.floor(save.xp/400)+1}
+function selectedWorld(){return worlds.find(v=>v.id===save.world)||worlds[0]}
+function selectedSkin(){return skins.find(v=>v.id===save.skin)||skins[0]}
+function selectedPet(){return pets.find(v=>v.id===save.pet)||pets[0]}
+function start(m='survival'){
+ mode=m;state='play';paused=false;score=0;coinsRun=0;level=1;combo=1;comboT=0;mult=1;multT=0;shield=0;magnet=0;golden=0;slow=0;
+ timeLeft=m==='timed'?90:(m==='duel'||m==='coop'?60:9999);rivalScore=0;allyScore=0;spawnO=0;spawnI=0;spawnP=900;shake=0;flash=0;boss=null;bossIndex=0;eventName='';eventT=0;doubleUsed=false;
+ obstacles=[];items=[];particles=[];ball.x=W/2;ball.y=H*.76;ball.tx=ball.x;ball.ty=ball.y;ball.trail=[];
+ if(save.pet==='fox')shield=7000;if(save.boosts.shield>0){shield=9000;save.boosts.shield--}if(save.boosts.magnet>0){magnet=9000;save.boosts.magnet--}if(save.boosts.golden>0){golden=6000;save.boosts.golden--}
+ persist();screens.forEach(s=>s.classList.add('hidden'));$('hud').classList.remove('hidden');$('power').classList.remove('hidden');$('bossbar').classList.add('hidden');
+ if(m==='bossrush')spawnBoss();updateHud();toast(m==='duel'?'DUELO 1 VS 1':m==='coinrace'?'CARRERA A 25':m==='coop'?'COOPERATIVO':m.toUpperCase());audioBeep(520,.1)
 }
+function home(){state='menu';$('hud').classList.add('hidden');$('power').classList.add('hidden');$('bossbar').classList.add('hidden');renderAll();show($('menu'))}
+function finish(){
+ if(state!=='play')return;state='over';let won=false;
+ if(mode==='duel')won=score>rivalScore;if(mode==='coinrace')won=coinsRun>=25;if(mode==='coop')won=(score+allyScore)>=3500;
+ if(['duel','coinrace','coop'].includes(mode)&&won){save.wins++;save.missions.wins++}
+ save.best=Math.max(save.best,Math.floor(score));save.coins+=coinsRun;save.totalCoins+=coinsRun;save.totalGames++;save.missions.games++;save.missions.coins+=coinsRun;save.missions.score=Math.max(save.missions.score,Math.floor(score));save.totalTime+=Math.min(180,mode==='timed'?90:60);
+ let pet=selectedPet();let xpGain=Math.floor(score/9)+coinsRun*3+(won?120:0);if(pet.id==='orb')xpGain=Math.floor(xpGain*1.05);save.xp+=xpGain;persist();
+ $('hud').classList.add('hidden');$('power').classList.add('hidden');$('bossbar').classList.add('hidden');
+ $('result').textContent=`Puntos ${Math.floor(score)} · Monedas +${coinsRun} · Nivel ${level} · XP +${xpGain} · Récord ${save.best}`;
+ let mr=$('multiResult');mr.classList.toggle('hidden',!['duel','coinrace','coop'].includes(mode));
+ if(mode==='duel')mr.innerHTML=`<b>${won?'🏆 VICTORIA':'❌ DERROTA'}</b><br>Tú ${Math.floor(score)} · Rival ${Math.floor(rivalScore)}`;
+ if(mode==='coinrace')mr.innerHTML=`<b>${won?'🏆 VICTORIA':'❌ DERROTA'}</b><br>Tú ${coinsRun} monedas · Rival ${Math.floor(rivalScore)} monedas`;
+ if(mode==='coop')mr.innerHTML=`<b>${won?'✅ OBJETIVO COMPLETADO':'❌ OBJETIVO NO ALCANZADO'}</b><br>Equipo ${Math.floor(score+allyScore)} / 3500`;
+ $('doubleCoinsBtn').disabled=coinsRun===0;show($('over'));audioBeep(won?720:220,.2,won?'sine':'sawtooth')
+}
+function updateHud(){
+ $('score').textContent=Math.floor(score);$('coins').textContent=coinsRun;$('level').textContent=level;$('combo').textContent='x'+combo;
+ let t='x'+mult+(shield?' · 🛡️':'')+(magnet?' · 🧲':'')+(golden?' · ⭐':'')+(eventName?' · '+eventName:'');
+ if(mode==='timed'||mode==='duel'||mode==='coop')t+=' · '+Math.max(0,Math.ceil(timeLeft));if(mode==='coinrace')t+=' · '+coinsRun+'/25';$('power').textContent=t;
+ if(boss){$('bossbar').classList.remove('hidden');$('bossName').textContent=boss.name;$('bossHp').style.width=Math.max(0,boss.hp/boss.max*100)+'%'}else $('bossbar').classList.add('hidden')
+}
+function burst(px,py,col,n=22,p=6){let count=save.lowFx?Math.ceil(n*.4):n;for(let i=0;i<count;i++){let a=rnd(0,7),s=rnd(1,p);particles.push({x:px,y:py,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(24,54),max:54,r:rnd(2,5),col})}}
+function spawnObstacle(){
+ let w=selectedWorld(),pool=w.id==='volcano'?['rock','comet','mine']:w.id==='ice'?['crystal','drone','rock']:w.id==='cyber'?['drone','gear','laser','satellite']:['rock','mine','drone','crystal','satellite','comet','gear'];
+ let type=pick(pool),r=rnd(19,37)+level*.35;obstacles.push({type,x:rnd(r,W-r),y:-60,r,s:(rnd(2.7,4.2)+level*.18)*(slow?.68:1),rot:rnd(0,7),vr:rnd(-.07,.07),phase:rnd(0,7),bossShot:false})
+}
+function spawnBoss(){bossIndex++;let names={space:'TITÁN METEORO',volcano:'REY MAGMA',ice:'NÚCLEO GLACIAL',jungle:'GUARDIÁN SALVAJE',cyber:'OMEGA-9',temple:'COLOSO ANTIGUO'};
+ boss={name:names[save.world]||'TITÁN',x:W/2,y:125,r:53,max:10+bossIndex*5,hp:10+bossIndex*5,phase:0,shot:0};toast('JEFE '+bossIndex);vibrate(100)
+}
+function spawnBossShot(){if(!boss)return;let a=Math.atan2(ball.y-boss.y,ball.x-boss.x);obstacles.push({type:'comet',x:boss.x,y:boss.y+20,r:18,s:6,rot:a,vr:0,phase:0,bossShot:true,vx:Math.cos(a)*(2.1+bossIndex*.2),vy:Math.sin(a)*(2.1+bossIndex*.2)})}
+function spawnItem(force){
+ let t=force|| (Math.random()<.62?'coin':pick(['meteor','shield','magnet','golden','slow','shot']));let value=t==='meteor'?pick([2,2,3,3,5,5,10,20]):1;
+ items.push({type:t,value,x:rnd(28,W-28),y:-35,r:t==='coin'?12:18,s:rnd(2.6,4),rot:0})
+}
+function triggerEvent(){
+ let ev=pick(['LLUVIA DE MONEDAS','GRAVEDAD BAJA','INVASIÓN DRON','FIEBRE x2']);eventName=ev;eventT=6500;toast(ev);
+ if(ev==='LLUVIA DE MONEDAS')for(let i=0;i<10;i++)setTimeout(()=>state==='play'&&spawnItem('coin'),i*180);
+ if(ev==='INVASIÓN DRON')for(let i=0;i<7;i++)setTimeout(()=>state==='play'&&spawnObstacle(),i*240);
+ if(ev==='FIEBRE x2'){mult=Math.max(mult,2);multT=7000}
+}
+function hit(a,b){let dx=a.x-b.x,dy=a.y-b.y;return dx*dx+dy*dy<(a.r+b.r)*(a.r+b.r)}
+function damageBoss(n=1){if(!boss)return;boss.hp-=n;burst(boss.x,boss.y,'#ff4e70',22,6);shake=8;audioBeep(170,.05,'square');
+ if(boss.hp<=0){save.bosses++;save.missions.boss++;coinsRun+=25+bossIndex*6;score+=900*mult;toast('JEFE DERROTADO');burst(boss.x,boss.y,'#ffd84f',70,10);boss=null;vibrate(180);
+ if(mode==='bossrush')setTimeout(()=>state==='play'&&spawnBoss(),900)}}
+function update(dt){
+ time+=dt;if(state!=='play'||paused)return;
+ let pet=selectedPet();let petScore=pet.id==='orb'?1.05:1;score+=dt*.012*mult*combo*petScore;
+ if(mode==='timed'||mode==='duel'||mode==='coop'){timeLeft-=dt/1000;if(timeLeft<=0){finish();return}}
+ if(mode==='duel')rivalScore+=dt*rnd(.009,.017)*(1+level*.03);if(mode==='coinrace')rivalScore+=dt*rnd(.0014,.0033);if(mode==='coop')allyScore+=dt*rnd(.008,.014);
+ let newLevel=1+Math.floor(score/550);if(newLevel>level){level=newLevel;toast('NIVEL '+level);flash=1;if(mode==='survival'&&level%5===0&&!boss)spawnBoss();if(level%4===0)triggerEvent()}
+ if(comboT>0&&(comboT-=dt)<=0)combo=1;if(multT>0&&(multT-=dt)<=0)mult=1;if(shield>0)shield-=dt;if(magnet>0)magnet-=dt;if(golden>0)golden-=dt;if(slow>0)slow-=dt;
+ if(eventT>0&&(eventT-=dt)<=0)eventName='';
+ spawnO-=dt;spawnI-=dt;spawnP-=dt;
+ if(spawnO<=0&&!boss){spawnObstacle();spawnO=Math.max(250,rnd(500,820)-level*19)}
+ if(spawnI<=0){spawnItem();if(Math.random()<.31)spawnItem();spawnI=rnd(390,720)}
+ if(spawnP<=0){spawnItem();spawnP=rnd(2100,3700)}
+ if(boss){boss.phase+=dt*.002;boss.x=W/2+Math.sin(boss.phase)*Math.min(W*.3,135);boss.shot-=dt;if(boss.shot<=0){spawnBossShot();boss.shot=Math.max(500,1080-bossIndex*70)}}
+ let ease=Math.min(.42,save.sensitivity/100);ball.x+=(ball.tx-ball.x)*ease;ball.y+=(ball.ty-ball.y)*ease;ball.x=Math.max(ball.r,Math.min(W-ball.r,ball.x));ball.y=Math.max(100,Math.min(H-ball.r-10,ball.y));
+ ball.trail.push({x:ball.x,y:ball.y});if(ball.trail.length>14)ball.trail.shift();
+ for(const o of obstacles){if(o.bossShot){o.x+=o.vx;o.y+=o.vy}else{o.y+=o.s;o.rot+=o.vr;o.phase+=dt*.005;if(o.type==='drone')o.x+=Math.sin(o.phase)*1.8;if(o.type==='laser')o.x+=Math.sin(o.phase)*2.5}}
+ for(const it of items){if(magnet&&it.type==='coin'){let dx=ball.x-it.x,dy=ball.y-it.y,d=Math.hypot(dx,dy);if(d<220){it.x+=dx*.065;it.y+=dy*.065}}it.y+=it.s;it.rot+=.04}
+ for(let i=obstacles.length-1;i>=0;i--){let o=obstacles[i];if(o.y>H+90||o.x<-100||o.x>W+100){obstacles.splice(i,1);continue}if(hit(ball,o)){if(mode==='training'){burst(o.x,o.y,'#66ff9d',20,5);obstacles.splice(i,1);continue}
+  if(golden){burst(o.x,o.y,'#ffd84f',27,7);obstacles.splice(i,1);score+=65;continue}
+  if(shield){shield=0;obstacles.splice(i,1);burst(o.x,o.y,'#66ff9d',30,7);toast('ESCUDO');vibrate(60);continue}
+  burst(ball.x,ball.y,'#ff4e70',48,9);shake=15;vibrate(180);finish();return}}
+ for(let i=items.length-1;i>=0;i--){let it=items[i];if(it.y>H+60){items.splice(i,1);continue}if(hit(ball,it)){items.splice(i,1);combo=Math.min(8,combo+1);comboT=2400;save.missions.powers+=(it.type==='coin'?0:1);
+  if(it.type==='coin'){let gain=pet.id==='drone'&&Math.random()<.08?2:1;coinsRun+=gain;score+=25*mult;burst(it.x,it.y,'#ffd84f',15,4);audioBeep(680,.04)}
+  else if(it.type==='meteor'){mult=it.value;multT=7600;toast('METEORITO x'+it.value);burst(it.x,it.y,'#a64eff',32,7)}
+  else if(it.type==='shield'){shield=9000;toast('ESCUDO')}
+  else if(it.type==='magnet'){magnet=9000;toast('IMÁN')}
+  else if(it.type==='golden'){golden=7000;toast('BOLA DORADA')}
+  else if(it.type==='slow'){slow=7000;toast('CÁMARA LENTA')}
+  else if(it.type==='shot'){if(boss){damageBoss(2);toast('IMPACTO')}else{score+=170;toast('+170')}}
+  burst(it.x,it.y,'#a64eff',28,7);audioBeep(520,.06)}}
+ if(mode==='coinrace'&&(coinsRun>=25||rivalScore>=25)){finish();return}
+ if(boss&&Math.hypot(ball.x-boss.x,ball.y-boss.y)<ball.r+boss.r){if(golden){damageBoss(2);ball.ty+=90}else if(shield){shield=0;damageBoss(1);ball.ty+=90}else if(mode!=='training'){finish();return}}
+ for(const p of particles){p.x+=p.vx;p.y+=p.vy;p.vy+=.06;p.life--}particles=particles.filter(p=>p.life>0);shake*=.86;flash*=.88;updateHud()
+}
+function drawObstacle(o){
+ x.save();x.translate(o.x,o.y);x.rotate(o.rot);x.shadowColor='#ff4e70';x.shadowBlur=12;
+ if(o.type==='rock'){x.fillStyle='#7c8799';x.beginPath();for(let i=0;i<9;i++){let a=i/9*7,r=o.r*rnd(.75,1.05);x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}x.closePath();x.fill()}
+ if(o.type==='mine'){x.fillStyle='#101520';x.beginPath();x.arc(0,0,o.r*.7,0,7);x.fill();x.strokeStyle='#ff4e70';x.lineWidth=4;for(let i=0;i<8;i++){let a=i/8*7;x.beginPath();x.moveTo(Math.cos(a)*o.r*.55,Math.sin(a)*o.r*.55);x.lineTo(Math.cos(a)*o.r,Math.sin(a)*o.r);x.stroke()}}
+ if(o.type==='drone'){x.fillStyle='#ccd6e6';x.fillRect(-o.r*.5,-o.r*.25,o.r,o.r*.5);x.fillStyle='#ff4e70';x.fillRect(-o.r*1.1,-4,o.r*.5,8);x.fillRect(o.r*.6,-4,o.r*.5,8)}
+ if(o.type==='crystal'){x.fillStyle='#75d9ff';x.beginPath();x.moveTo(0,-o.r);x.lineTo(o.r*.7,0);x.lineTo(0,o.r);x.lineTo(-o.r*.7,0);x.closePath();x.fill()}
+ if(o.type==='satellite'){x.fillStyle='#bac6d7';x.fillRect(-o.r*.4,-o.r*.3,o.r*.8,o.r*.6);x.fillStyle='#467aff';x.fillRect(-o.r*1.2,-5,o.r*.65,10);x.fillRect(o.r*.55,-5,o.r*.65,10)}
+ if(o.type==='comet'){x.fillStyle='#fb7185';x.beginPath();x.ellipse(0,0,o.r,o.r*.55,0,0,7);x.fill();x.fillStyle='#ffc0ca';x.fillRect(-o.r*1.5,-4,o.r,8)}
+ if(o.type==='gear'){x.fillStyle='#a8b1c1';x.beginPath();for(let i=0;i<16;i++){let a=i/16*7,r=i%2?o.r*.72:o.r;x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}x.closePath();x.fill();x.fillStyle='#242b3c';x.beginPath();x.arc(0,0,o.r*.3,0,7);x.fill()}
+ if(o.type==='laser'){x.fillStyle='#ff4df3';x.fillRect(-o.r*1.3,-5,o.r*2.6,10);x.fillStyle='#fff';x.fillRect(-o.r*.8,-2,o.r*1.6,4)}
+ x.restore()
+}
+function drawItem(it){x.save();x.translate(it.x,it.y);x.rotate(it.rot);let cs={coin:'#ffd84f',meteor:'#a64eff',shield:'#66ff9d',magnet:'#ff5f91',golden:'#ffd84f',slow:'#69c7ff',shot:'#ff8a3d'};
+ x.shadowColor=cs[it.type];x.shadowBlur=18;x.fillStyle=cs[it.type];x.beginPath();x.arc(0,0,it.r,0,7);x.fill();x.fillStyle='#07101b';x.font='900 14px Arial';x.textAlign='center';
+ let t=it.type==='coin'?'$':it.type==='meteor'?'x'+it.value:it.type==='shield'?'S':it.type==='magnet'?'M':it.type==='golden'?'G':it.type==='slow'?'T':'⚡';x.fillText(t,0,5);x.restore()}
+function draw(){
+ let sx=shake?rnd(-shake,shake):0,sy=shake?rnd(-shake,shake):0;x.save();x.translate(sx,sy);x.clearRect(-30,-30,W+60,H+60);let w=selectedWorld();
+ let g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,w.top);g.addColorStop(.58,'#080d25');g.addColorStop(1,w.bottom);x.fillStyle=g;x.fillRect(-30,-30,W+60,H+60);
+ for(const s of stars){s.y+=s.v;if(s.y>H){s.y=0;s.x=Math.random()*W}x.globalAlpha=.42;x.fillStyle='#fff';x.fillRect(s.x,s.y,s.s,s.s)}x.globalAlpha=1;
+ for(const cl of clouds){cl.x+=cl.v;if(cl.x>W+cl.w)cl.x=-cl.w;x.globalAlpha=.035;x.fillStyle=w.accent;x.beginPath();x.ellipse(cl.x,cl.y,cl.w,cl.w*.25,0,0,7);x.fill()}x.globalAlpha=1;
+ for(let i=0;i<7;i++){let yy=(time*.09+i*170)%(H+260)-130,xx=(i*151+time*.025)%W;x.globalAlpha=.14;x.strokeStyle=w.accent;x.beginPath();x.moveTo(xx-45,yy-75);x.lineTo(xx,yy);x.stroke();x.beginPath();x.arc(xx,yy,5,0,7);x.fillStyle=w.accent;x.fill()}x.globalAlpha=1;
+ for(const it of items)drawItem(it);for(const o of obstacles)drawObstacle(o);
+ if(boss){x.save();x.translate(boss.x,boss.y);x.shadowColor=w.accent;x.shadowBlur=30;x.fillStyle='#541127';x.beginPath();x.arc(0,0,boss.r,0,7);x.fill();x.fillStyle=w.accent;x.beginPath();x.arc(0,0,boss.r*.58,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(-15,-10,7,0,7);x.arc(15,-10,7,0,7);x.fill();x.restore()}
+ let s=selectedSkin();for(let i=0;i<ball.trail.length;i++){let p=ball.trail[i];x.globalAlpha=i/ball.trail.length*.3;x.fillStyle=s.c1;x.beginPath();x.arc(p.x,p.y,ball.r*(.25+i/ball.trail.length*.6),0,7);x.fill()}x.globalAlpha=1;
+ if(shield){x.strokeStyle='#66ff9d';x.lineWidth=4;x.shadowColor='#66ff9d';x.shadowBlur=18;x.beginPath();x.arc(ball.x,ball.y,ball.r+11,0,7);x.stroke()}
+ x.shadowColor=golden?'#ffd84f':s.c1;x.shadowBlur=28;x.fillStyle=golden?'#ffd84f':s.c2;x.beginPath();x.arc(ball.x,ball.y,ball.r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.8)';x.beginPath();x.arc(ball.x-7,ball.y-8,5.5,0,7);x.fill();
+ x.font='15px Arial';x.textAlign='center';x.fillText(s.icon,ball.x,ball.y+5);
+ let pet=selectedPet();if(pet.id!=='none'){let px=ball.x+Math.cos(time*.004)*38,py=ball.y+Math.sin(time*.004)*18;x.font='22px Arial';x.fillText(pet.icon,px,py)}
+ for(const p of particles){x.globalAlpha=Math.max(0,p.life/p.max);x.fillStyle=p.col;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()}x.globalAlpha=1;
+ if(flash>.02){x.fillStyle=`rgba(255,255,255,${flash*.3})`;x.fillRect(-30,-30,W+60,H+60)}x.restore()
+}
+function loop(ts){let dt=Math.min(33,ts-last||16);last=ts;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
+function target(e){if(state!=='play'||paused)return;let p=e.touches?e.touches[0]:e;e.preventDefault();ball.tx=p.clientX;ball.ty=p.clientY-72}
+addEventListener('touchstart',target,{passive:false});addEventListener('touchmove',target,{passive:false});addEventListener('mousedown',target);addEventListener('mousemove',e=>{if(e.buttons)target(e)});
+function renderSkins(){
+ $('skinGrid').innerHTML=skins.map(s=>{let own=save.ownedSkins.includes(s.id),active=save.skin===s.id;return `<button class="skin ${active?'active':''} ${own?'':'locked'}" data-skin="${s.id}"><div class="skinBall" style="background:radial-gradient(circle at 30% 25%,#fff,${s.c1} 25%,${s.c2} 75%);color:${s.c1}">${s.icon}</div>${s.name}<small>${s.rarity}<br>${own?'EQUIPAR':s.price+' monedas'}</small></button>`}).join('');
+ document.querySelectorAll('[data-skin]').forEach(b=>b.onclick=()=>{let s=skins.find(v=>v.id===b.dataset.skin);if(save.ownedSkins.includes(s.id)){save.skin=s.id;persist();renderAll();toast('Skin equipada')}else toast('Cómprala en la tienda')})
+}
+function renderWorlds(){
+ $('worldGrid').innerHTML=worlds.map(w=>{let own=save.ownedWorlds.includes(w.id),active=save.world===w.id;return `<button class="world ${active?'active':''} ${own?'':'locked'}" data-world="${w.id}"><div class="worldIcon">${w.icon}</div>${w.name}<small>${own?'SELECCIONAR':w.price+' monedas · Nv. '+w.unlock}</small></button>`}).join('');
+ document.querySelectorAll('[data-world]').forEach(b=>b.onclick=()=>{let w=worlds.find(v=>v.id===b.dataset.world);if(save.ownedWorlds.includes(w.id)){save.world=w.id;persist();renderAll();toast('Mundo seleccionado')}else toast('Desbloquéalo en la tienda')})
+}
+function renderPets(){
+ $('petGrid').innerHTML=pets.map(p=>{let own=save.ownedPets.includes(p.id),active=save.pet===p.id;return `<button class="pet ${active?'active':''} ${own?'':'locked'}" data-pet="${p.id}"><div class="petIcon">${p.icon}</div>${p.name}<small>${p.bonus}<br>${own?'EQUIPAR':p.price+' monedas'}</small></button>`}).join('');
+ document.querySelectorAll('[data-pet]').forEach(b=>b.onclick=()=>{let p=pets.find(v=>v.id===b.dataset.pet);if(save.ownedPets.includes(p.id)){save.pet=p.id;persist();renderAll();toast('Mascota equipada')}else toast('Cómprala en la tienda')})
+}
+function renderPass(){
+ let lvl=seasonLevel(),xp=save.xp%400;$('passInfo').innerHTML=`<div class="box"><b>Nivel de temporada ${lvl}</b><small> · ${xp}/400 XP</small><div class="progress"><i style="width:${xp/4}%"></i></div></div>`;
+ $('passRewards').innerHTML=Array.from({length:8},(_,i)=>i+1).map(n=>{let req=n*400,ok=save.xp>=req,cl=save.claimedPass.includes(n),reward=n%3===0?'5 gemas':'100 monedas';
+ return `<div class="box ${cl?'claimed':''}"><b>Nivel ${n+1}: ${reward}</b><button class="btn ${ok&&!cl?'gold':'secondary'} claimPass" data-pass="${n}" ${!ok||cl?'disabled':''}>${cl?'RECOGIDO':ok?'RECOGER':'BLOQUEADO'}</button></div>`}).join('');
+ document.querySelectorAll('.claimPass').forEach(b=>b.onclick=()=>{let n=+b.dataset.pass;if(save.xp>=n*400&&!save.claimedPass.includes(n)){save.claimedPass.push(n);if(n%3===0)save.gems+=5;else save.coins+=100;persist();renderAll();toast('Recompensa recogida')}})
+}
+function renderMissions(){
+ document.querySelectorAll('.missionTab').forEach(t=>t.classList.toggle('active',t.dataset.tab===missionTab));let m=save.missions;
+ let list=missionTab==='daily'?
+ [{n:'Recoge 50 monedas',v:m.coins,max:50,r:60},{n:'Usa 15 poderes',v:m.powers,max:15,r:70},{n:'Juega 3 partidas',v:m.games,max:3,r:80}]:
+ [{n:'Derrota 5 jefes',v:m.boss,max:5,r:150},{n:'Consigue 10.000 puntos',v:m.score,max:10000,r:200},{n:'Gana 3 duelos',v:m.wins,max:3,r:180}];
+ $('missionList').innerHTML=list.map((q,i)=>`<div class="box"><b>${q.n}</b><small> · ${Math.min(q.v,q.max)}/${q.max}</small><div class="progress"><i style="width:${Math.min(q.v/q.max*100,100)}%"></i></div><button class="btn ${q.v>=q.max?'gold':'secondary'} missionClaim" data-m="${missionTab}-${i}" ${q.v<q.max?'disabled':''}>${q.v>=q.max?'RECOGER '+q.r:'EN PROGRESO'}</button></div>`).join('');
+ document.querySelectorAll('.missionClaim').forEach(b=>b.onclick=()=>{let key=b.dataset.m;if(!save['claimed_'+key]){save['claimed_'+key]=true;let idx=+key.split('-')[1],rewards=missionTab==='daily'?[60,70,80]:[150,200,180];save.coins+=rewards[idx];persist();renderAll();toast('Misión completada')}})
+}
+function renderAchievements(){
+ $('achievementList').innerHTML=achievements.map(a=>{let ok=a.test(),cl=save.claimedAchievements.includes(a.id);return `<div class="box ${cl?'claimed':''}"><b>${ok?'✅':'🔒'} ${a.name}</b><small> · ${a.desc}</small><button class="btn ${ok&&!cl?'gold':'secondary'} achievementClaim" data-a="${a.id}" ${!ok||cl?'disabled':''}>${cl?'RECOGIDO':ok?'RECOGER '+a.reward:'BLOQUEADO'}</button></div>`}).join('');
+ document.querySelectorAll('.achievementClaim').forEach(b=>b.onclick=()=>{let a=achievements.find(v=>v.id===b.dataset.a);if(a.test()&&!save.claimedAchievements.includes(a.id)){save.claimedAchievements.push(a.id);save.coins+=a.reward;persist();renderAll();toast('Logro reclamado')}})
+}
+function renderShop(){
+ document.querySelectorAll('.shopTab').forEach(t=>t.classList.toggle('active',t.dataset.shop===shopTab));$('wallet').textContent=`Monedas: ${save.coins} · Gemas: ${save.gems}`;
+ let html='';
+ if(shopTab==='skins')html=skins.filter(s=>!save.ownedSkins.includes(s.id)).map(s=>`<button class="btn secondary buySkin" data-buy="${s.id}">${s.icon} ${s.name} · ${s.price} monedas</button>`).join('')||'<div class="box">Todas las skins compradas.</div>';
+ if(shopTab==='pets')html=pets.filter(p=>!save.ownedPets.includes(p.id)).map(p=>`<button class="btn secondary buyPet" data-buy="${p.id}">${p.icon} ${p.name} · ${p.price} monedas</button>`).join('')||'<div class="box">Todas las mascotas compradas.</div>';
+ if(shopTab==='boosts')html=`<button class="btn secondary buyBoost" data-boost="shield">🛡️ Escudo inicial · 80 monedas</button><button class="btn secondary buyBoost" data-boost="magnet">🧲 Imán inicial · 100 monedas</button><button class="btn secondary buyBoost" data-boost="golden">⭐ Bola dorada inicial · 160 monedas</button>`+
+ worlds.filter(w=>!save.ownedWorlds.includes(w.id)&&playerLevel()>=w.unlock).map(w=>`<button class="btn secondary buyWorld" data-buy="${w.id}">${w.icon} Mundo ${w.name} · ${w.price} monedas</button>`).join('');
+ $('shopList').innerHTML=html;
+ document.querySelectorAll('.buySkin').forEach(b=>b.onclick=()=>{let s=skins.find(v=>v.id===b.dataset.buy);if(save.coins>=s.price){save.coins-=s.price;save.ownedSkins.push(s.id);persist();renderAll();toast('Skin comprada')}else toast('Faltan monedas')});
+ document.querySelectorAll('.buyPet').forEach(b=>b.onclick=()=>{let p=pets.find(v=>v.id===b.dataset.buy);if(save.coins>=p.price){save.coins-=p.price;save.ownedPets.push(p.id);persist();renderAll();toast('Mascota comprada')}else toast('Faltan monedas')});
+ document.querySelectorAll('.buyWorld').forEach(b=>b.onclick=()=>{let w=worlds.find(v=>v.id===b.dataset.buy);if(save.coins>=w.price){save.coins-=w.price;save.ownedWorlds.push(w.id);persist();renderAll();toast('Mundo desbloqueado')}else toast('Faltan monedas')});
+ document.querySelectorAll('.buyBoost').forEach(b=>b.onclick=()=>{let pr={shield:80,magnet:100,golden:160}[b.dataset.boost];if(save.coins>=pr){save.coins-=pr;save.boosts[b.dataset.boost]++;persist();renderAll();toast('Ventaja comprada')}else toast('Faltan monedas')})
+}
+function renderProfile(){
+ $('profileStats').innerHTML=`<div class="statCard"><b>${playerLevel()}</b>Nivel</div><div class="statCard"><b>${save.best}</b>Récord</div><div class="statCard"><b>${save.wins}</b>Victorias</div><div class="statCard"><b>${save.bosses}</b>Jefes</div>`;
+ $('profileDetails').innerHTML=`<div class="box"><b>Rango</b><small> · ${['Bronce','Plata','Oro','Platino','Diamante','Maestro'][Math.min(5,Math.floor(playerLevel()/10))]}</small></div><div class="box"><b>Skin equipada</b><small> · ${selectedSkin().icon} ${selectedSkin().name}</small></div><div class="box"><b>Mascota</b><small> · ${selectedPet().icon} ${selectedPet().name}</small></div><div class="box"><b>Mundo</b><small> · ${selectedWorld().icon} ${selectedWorld().name}</small></div>`
+}
+function renderRanking(){
+ document.querySelectorAll('.rankTab').forEach(t=>t.classList.toggle('active',t.dataset.rank===rankTab));let base=rankTab==='global'?[['Nova',18400],['Astro',15100],['Luna',12600],['Bolt',9800],['Tú',save.best],['Meteoro',7600]]:rankTab==='weekly'?[['Flash',7200],['Tú',Math.floor(save.best*.65)],['Orbita',4400],['Pixel',3800]]:[['Tú',save.best],['Carlos',3900],['Ana',3100],['Bot Nova',2800]];
+ $('rankList').innerHTML=base.sort((a,b)=>b[1]-a[1]).map((r,i)=>`<div class="rankrow"><span>${i+1}. ${r[0]}</span><b>${r[1]}</b></div>`).join('')
+}
+function renderAll(){
+ $('newsBox').innerHTML=`<b>🌠 Evento activo: Tormenta Cósmica</b><br><small>Monedas y XP aumentadas durante la demo.</small>`;
+ renderSkins();renderWorlds();renderPets();renderPass();renderMissions();renderAchievements();renderShop();renderProfile();renderRanking();
+ $('musicToggle').checked=save.music;$('sfxToggle').checked=save.sfx;$('vibToggle').checked=save.vib;$('lowFxToggle').checked=save.lowFx;$('sensRange').value=save.sensitivity;
+ let today=Math.floor(Date.now()/86400000),claimed=save.daily===today;$('dailyBtn').textContent=claimed?'PREMIO YA RECOGIDO':'🎁 RECOGER 100 MONEDAS';$('dailyBtn').disabled=claimed;$('dailyBtn').style.opacity=claimed?.45:1
+}
+$('playBtn').onclick=()=>show($('modes'));$('multiBtn').onclick=()=>show($('multi'));$('worldsBtn').onclick=()=>{renderAll();show($('worlds'))};$('skinsBtn').onclick=()=>{renderAll();show($('skins'))};$('petsBtn').onclick=()=>{renderAll();show($('pets'))};
+$('passBtn').onclick=()=>{renderAll();show($('pass'))};$('missionsBtn').onclick=()=>{renderAll();show($('missions'))};$('achievementsBtn').onclick=()=>{renderAll();show($('achievements'))};$('shopBtn').onclick=()=>{renderAll();show($('shop'))};
+$('profileBtn').onclick=()=>{renderAll();show($('profile'))};$('rankingBtn').onclick=()=>{renderAll();show($('ranking'))};$('settingsBtn').onclick=()=>{renderAll();show($('settings'))};
+document.querySelectorAll('.startMode').forEach(b=>b.onclick=()=>start(b.dataset.mode));document.querySelectorAll('.multiMode').forEach(b=>b.onclick=()=>start(b.dataset.mode));document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show($('menu')));
+document.querySelectorAll('.missionTab').forEach(b=>b.onclick=()=>{missionTab=b.dataset.tab;renderMissions()});document.querySelectorAll('.shopTab').forEach(b=>b.onclick=()=>{shopTab=b.dataset.shop;renderShop()});document.querySelectorAll('.rankTab').forEach(b=>b.onclick=()=>{rankTab=b.dataset.rank;renderRanking()});
+$('pauseBtn').onclick=()=>{paused=true;state='pause';show($('pause'))};$('resumeBtn').onclick=()=>{paused=false;state='play';$('pause').classList.add('hidden')};$('quitBtn').onclick=home;$('homeBtn').onclick=home;$('retryBtn').onclick=()=>start(mode);
+$('doubleCoinsBtn').onclick=()=>{if(!doubleUsed&&coinsRun>0){save.coins+=coinsRun;doubleUsed=true;persist();$('doubleCoinsBtn').disabled=true;toast('Monedas duplicadas');audioBeep(760,.12)}};
+$('dailyBtn').onclick=()=>{let today=Math.floor(Date.now()/86400000);if(save.daily!==today){save.daily=today;save.coins+=100;persist();renderAll();toast('+100 monedas')}};
+$('musicToggle').onchange=e=>{save.music=e.target.checked;persist()};$('sfxToggle').onchange=e=>{save.sfx=e.target.checked;persist()};$('vibToggle').onchange=e=>{save.vib=e.target.checked;persist()};$('lowFxToggle').onchange=e=>{save.lowFx=e.target.checked;persist()};$('sensRange').oninput=e=>{save.sensitivity=+e.target.value;persist()};
+$('resetBtn').onclick=()=>{localStorage.removeItem('cb10full');location.reload()};
+renderAll();home()
+})();
 </script>
-</body></html>
+</body>
+</html>
