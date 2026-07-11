@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#050816">
-<title>Crazy Ball v10.2 HD Realism</title>
+<title>Crazy Ball v10.3 Pause Fix</title>
 <style>
 :root{
  --cyan:#27e7ff;--blue:#4074ff;--purple:#a64eff;--gold:#ffd84f;
@@ -37,7 +37,7 @@ color:#fff;background:linear-gradient(90deg,var(--cyan),var(--purple));box-shado
 .topbar{position:absolute;top:calc(env(safe-area-inset-top) + 7px);left:7px;right:7px;display:flex;gap:4px;z-index:6}
 .stat{min-width:52px;padding:7px 5px;border-radius:13px;background:#060a1dcc;border:1px solid #ffffff18;text-align:center;
 box-shadow:0 8px 22px #0008;backdrop-filter:blur(8px)}.stat small{display:block;font-size:8px;color:#b8c5f7;font-weight:1000}.stat b{font-size:16px}
-.spacer{flex:1}.iconBtn{pointer-events:auto;width:46px;height:46px;border:0;border-radius:14px;
+.spacer{flex:1}.iconBtn{pointer-events:auto!important;position:relative;z-index:50;width:52px;height:52px;border:0;border-radius:14px;
 background:linear-gradient(135deg,var(--cyan),var(--purple));color:#fff;font-weight:1000;font-size:19px}
 .power{position:absolute;top:calc(env(safe-area-inset-top) + 62px);left:50%;transform:translateX(-50%);z-index:6;
 padding:7px 13px;border-radius:999px;background:#071027df;border:1px solid #ffffff22;font-weight:1000;white-space:nowrap}
@@ -82,7 +82,7 @@ background:#0b1129ee;border:1px solid #ffffff28;font-size:18px;font-weight:1000;
 
  <div id="menu" class="screen"><div class="card">
   <div class="logoWrap"><div class="logoRing"></div><div class="logoBall"></div></div>
-  <h1>CRAZY BALL</h1><div class="sub">v10.2 HD REALISM</div>
+  <h1>CRAZY BALL</h1><div class="sub">v10.3 PAUSE FIX</div>
   <p class="desc">Arcade de habilidad con mundos, jefes, progresión, colecciones, eventos y competición.</p>
   <div id="newsBox" class="news"></div>
   <button id="playBtn" class="btn">▶ JUGAR</button>
@@ -144,7 +144,7 @@ background:#0b1129ee;border:1px solid #ffffff28;font-size:18px;font-weight:1000;
 
  <div id="pause" class="screen hidden"><div class="card"><h1>PAUSA</h1><button id="resumeBtn" class="btn">CONTINUAR</button><button id="quitBtn" class="btn secondary">SALIR</button></div></div>
  <div id="over" class="screen hidden"><div class="card"><h1>RESULTADO</h1><p id="result" class="desc"></p><div id="multiResult" class="box hidden"></div><button id="doubleCoinsBtn" class="btn gold">📺 DUPLICAR MONEDAS</button><button id="retryBtn" class="btn">REINTENTAR</button><button id="homeBtn" class="btn secondary">MENÚ</button></div></div>
- <div class="bottom">Arrastra el dedo · La bola se mantiene 125 px por encima</div>
+ <div class="bottom">Arrastra el dedo · La bola se mantiene 95 px por encima</div>
 </div>
 <script>
 (()=>{'use strict';
@@ -436,18 +436,29 @@ if(flash>.02){x.fillStyle=`rgba(255,255,255,${flash*.3})`;x.fillRect(-30,-30,W+6
 }
 function loop(ts){let dt=Math.min(33,ts-last||16);last=ts;update(dt);draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
 function target(e){
- if(e.target && (e.target.closest('button') || e.target.closest('.screen'))) return;
  if(state!=='play'||paused)return;
  let p=e.touches?e.touches[0]:e;
+ const pauseButton=$('pauseBtn');
+ const r=pauseButton.getBoundingClientRect();
+ const insidePause=p.clientX>=r.left-12&&p.clientX<=r.right+12&&p.clientY>=r.top-12&&p.clientY<=r.bottom+12;
+ if(insidePause||e.target===pauseButton||pauseButton.contains(e.target))return;
  e.preventDefault();
  touchGuide.x=p.clientX;touchGuide.y=p.clientY;touchGuide.active=true;
  ball.tx=p.clientX;
- ball.ty=Math.max(105,p.clientY-125);
+ ball.ty=Math.max(105,p.clientY-95);
 }
-addEventListener('touchstart',target,{passive:false});
+addEventListener('touchstart',e=>{
+ const path=e.composedPath?e.composedPath():[];
+ if(path.some(n=>n&&n.tagName==='BUTTON'))return;
+ target(e);
+},{passive:false});
 addEventListener('touchmove',target,{passive:false});
 addEventListener('touchend',()=>touchGuide.active=false,{passive:true});
-addEventListener('mousedown',target);
+addEventListener('mousedown',e=>{
+ const path=e.composedPath?e.composedPath():[];
+ if(path.some(n=>n&&n.tagName==='BUTTON'))return;
+ target(e);
+});
 addEventListener('mouseup',()=>touchGuide.active=false);
 addEventListener('mousemove',e=>{if(e.buttons)target(e)});
 function renderSkins(){
@@ -513,12 +524,23 @@ $('profileBtn').onclick=()=>{renderAll();show($('profile'))};$('rankingBtn').onc
 document.querySelectorAll('.startMode').forEach(b=>b.onclick=()=>start(b.dataset.mode));document.querySelectorAll('.multiMode').forEach(b=>b.onclick=()=>start(b.dataset.mode));document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show($('menu')));
 document.querySelectorAll('.missionTab').forEach(b=>b.onclick=()=>{missionTab=b.dataset.tab;renderMissions()});document.querySelectorAll('.shopTab').forEach(b=>b.onclick=()=>{shopTab=b.dataset.shop;renderShop()});document.querySelectorAll('.rankTab').forEach(b=>b.onclick=()=>{rankTab=b.dataset.rank;renderRanking()});
 function openPause(e){
- if(e){e.preventDefault();e.stopPropagation();}
- if(state!=='play')return;
- paused=true;state='pause';show($('pause'));
+ if(e){
+  e.preventDefault();
+  e.stopPropagation();
+  if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+ }
+ if(state!=='play'||paused)return false;
+ touchGuide.active=false;
+ paused=true;
+ state='pause';
+ screens.forEach(s=>s.classList.add('hidden'));
+ $('pause').classList.remove('hidden');
+ return false;
 }
-$('pauseBtn').onclick=openPause;
-$('pauseBtn').addEventListener('touchstart',openPause,{passive:false});$('resumeBtn').onclick=(e)=>{
+const pauseControl=$('pauseBtn');
+pauseControl.addEventListener('pointerdown',openPause,{capture:true});
+pauseControl.addEventListener('touchstart',openPause,{capture:true,passive:false});
+pauseControl.addEventListener('click',openPause,{capture:true});$('resumeBtn').onclick=(e)=>{
  e.preventDefault();e.stopPropagation();
  paused=false;state='play';
  screens.forEach(s=>s.classList.add('hidden'));

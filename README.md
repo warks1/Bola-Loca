@@ -1,20 +1,11 @@
-# Crazy Ball v10.2 HD Realism
+# Crazy Ball v10.3 Pause Fix
 
 ## Correcciones
-- Botón de pausa corregido para funcionar con toque y clic.
-- El control táctil ya no bloquea los botones de la interfaz.
-- Reanudación de partida más estable.
-
-## Equilibrio
-- Las ventajas aparecen con mucha más separación.
-- Mayor proporción de monedas frente a poderes.
-- Tiempo entre ventajas especiales aumentado.
-
-## Gráficos
-- Fondo con nebulosas, iluminación móvil, rejilla de profundidad y viñeta.
-- Obstáculos con sombras, reflejos y más detalles mecánicos.
-- Drones y satélites con piezas, luces y antenas mejor definidas.
-- Mayor sensación de volumen y profundidad.
+- El botón de pausa está completamente separado del control de la bola.
+- El toque dentro o alrededor del botón no mueve la bola.
+- Se usan eventos táctiles, de puntero y clic con captura.
+- Al pausar se desactiva inmediatamente la guía táctil.
+- La bola ahora se sitúa 95 px por encima del dedo, en lugar de 125 px.
 
 ## Uso
 Descomprime el ZIP y abre `index.html`.
