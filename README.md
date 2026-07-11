@@ -1,11 +1,15 @@
-# Crazy Ball v10.4 Control Rebuild
+# Crazy Ball v10.5 Skins & Challenge
 
 ## Cambios
-- El movimiento de la bola solo escucha eventos sobre el canvas del juego.
-- Los botones ya no comparten eventos con el control táctil.
-- El botón de pausa abre la pantalla de pausa sin mover la bola.
-- La bola queda 38 px por encima del dedo, mucho más cerca.
-- Control unificado con Pointer Events para iPhone, Android, ratón y lápiz.
+- La bola queda 58 px por encima del dedo.
+- Catálogo ampliado a 30 skins de bola.
+- Catálogo ampliado a 30 mascotas.
+- Niveles más rápidos y más difíciles.
+- Mayor velocidad de obstáculos.
+- Obstáculos dobles y triples en niveles altos.
+- Eventos cada 3 niveles.
+- Jefes cada 4 niveles.
+- Jefes con más vida y ataques más rápidos.
 
 ## Uso
 Descomprime el ZIP y abre `index.html`.

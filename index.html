@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#050816">
-<title>Crazy Ball v10.4 Control Rebuild</title>
+<title>Crazy Ball v10.5 Skins & Challenge</title>
 <style>
 :root{
  --cyan:#27e7ff;--blue:#4074ff;--purple:#a64eff;--gold:#ffd84f;
@@ -82,7 +82,7 @@ background:#0b1129ee;border:1px solid #ffffff28;font-size:18px;font-weight:1000;
 
  <div id="menu" class="screen"><div class="card">
   <div class="logoWrap"><div class="logoRing"></div><div class="logoBall"></div></div>
-  <h1>CRAZY BALL</h1><div class="sub">v10.4 CONTROL REBUILD</div>
+  <h1>CRAZY BALL</h1><div class="sub">v10.5 SKINS & CHALLENGE</div>
   <p class="desc">Arcade de habilidad con mundos, jefes, progresión, colecciones, eventos y competición.</p>
   <div id="newsBox" class="news"></div>
   <button id="playBtn" class="btn">▶ JUGAR</button>
@@ -144,7 +144,7 @@ background:#0b1129ee;border:1px solid #ffffff28;font-size:18px;font-weight:1000;
 
  <div id="pause" class="screen hidden"><div class="card"><h1>PAUSA</h1><button id="resumeBtn" class="btn">CONTINUAR</button><button id="quitBtn" class="btn secondary">SALIR</button></div></div>
  <div id="over" class="screen hidden"><div class="card"><h1>RESULTADO</h1><p id="result" class="desc"></p><div id="multiResult" class="box hidden"></div><button id="doubleCoinsBtn" class="btn gold">📺 DUPLICAR MONEDAS</button><button id="retryBtn" class="btn">REINTENTAR</button><button id="homeBtn" class="btn secondary">MENÚ</button></div></div>
- <div class="bottom">Arrastra el dedo · La bola se mantiene 38 px por encima</div>
+ <div class="bottom">Arrastra el dedo · La bola se mantiene 58 px por encima</div>
 </div>
 <script>
 (()=>{'use strict';
@@ -181,7 +181,17 @@ const skins=[
 {id:'toxic',name:'Tóxica',icon:'☣️',price:850,rarity:'Legendaria',c1:'#d9f99d',c2:'#4d7c0f'},
 {id:'crystal',name:'Cristal',icon:'💎',price:950,rarity:'Mítica',c1:'#ffffff',c2:'#22d3ee'},
 {id:'storm',name:'Tormenta',icon:'⛈️',price:1050,rarity:'Mítica',c1:'#e0f2fe',c2:'#4338ca'},
-{id:'cosmic',name:'Cósmica',icon:'🪐',price:1250,rarity:'Mítica',c1:'#f5d0fe',c2:'#581c87'}
+{id:'cosmic',name:'Cósmica',icon:'🪐',price:1250,rarity:'Mítica',c1:'#f5d0fe',c2:'#581c87'},
+{id:'pirate',name:'Pirata',icon:'🏴‍☠️',price:680,rarity:'Legendaria',c1:'#f8fafc',c2:'#7c2d12'},
+{id:'ninja',name:'Ninja',icon:'🥷',price:760,rarity:'Legendaria',c1:'#cbd5e1',c2:'#111827'},
+{id:'samurai',name:'Samurái',icon:'🗡️',price:840,rarity:'Legendaria',c1:'#fecaca',c2:'#991b1b'},
+{id:'alienball',name:'Alien',icon:'👽',price:880,rarity:'Legendaria',c1:'#d9f99d',c2:'#166534'},
+{id:'candy',name:'Caramelo',icon:'🍬',price:460,rarity:'Épica',c1:'#fbcfe8',c2:'#db2777'},
+{id:'watermelon',name:'Sandía',icon:'🍉',price:430,rarity:'Épica',c1:'#fecdd3',c2:'#15803d'},
+{id:'pumpkin',name:'Calabaza',icon:'🎃',price:560,rarity:'Épica',c1:'#fed7aa',c2:'#c2410c'},
+{id:'snow',name:'Nevada',icon:'⛄',price:610,rarity:'Legendaria',c1:'#ffffff',c2:'#60a5fa'},
+{id:'heart',name:'Corazón',icon:'❤️',price:590,rarity:'Épica',c1:'#fecdd3',c2:'#e11d48'},
+{id:'skull',name:'Calavera',icon:'💀',price:740,rarity:'Legendaria',c1:'#f8fafc',c2:'#374151'}
 ];
 const worlds=[
 {id:'space',name:'Espacio',icon:'🌌',price:0,unlock:1,top:'#17376c',bottom:'#1b071f',accent:'#27e7ff'},
@@ -198,7 +208,7 @@ const pets=[
 {id:'dragon',name:'Mini dragón',icon:'🐲',price:900,bonus:'+10% duración de poderes'},
 {id:'robotdog',name:'Perro robot',icon:'🐕‍🦺',price:520,bonus:'+5% velocidad de imán'},
 {id:'cat',name:'Gato lunar',icon:'🐈',price:560,bonus:'+4% XP'},
-{id:'phoenix',name:'Fénix',icon:'🦅',price:1000,bonus:'Una explosión protectora'},
+{id:'phoenix',name:'Fénix',icon:'🦅',price:1000,bonus:'Explosión protectora'},
 {id:'slime',name:'Slime',icon:'🟢',price:380,bonus:'+3% monedas'},
 {id:'owl',name:'Búho sabio',icon:'🦉',price:700,bonus:'+7% XP'},
 {id:'shark',name:'Tiburón mini',icon:'🦈',price:760,bonus:'+6% puntuación'},
@@ -206,7 +216,21 @@ const pets=[
 {id:'bee',name:'Abeja turbo',icon:'🐝',price:580,bonus:'+5% combo'},
 {id:'alien',name:'Alien',icon:'👽',price:820,bonus:'+8% poder'},
 {id:'unicorn',name:'Unicornio',icon:'🦄',price:1100,bonus:'+10% XP'},
-{id:'meteorpet',name:'Mini meteoro',icon:'☄️',price:900,bonus:'+5% multiplicador'}
+{id:'meteorpet',name:'Mini meteoro',icon:'☄️',price:900,bonus:'+5% multiplicador'},
+{id:'panda',name:'Panda',icon:'🐼',price:600,bonus:'+4% monedas'},
+{id:'wolf',name:'Lobo',icon:'🐺',price:720,bonus:'+5% velocidad'},
+{id:'lion',name:'León',icon:'🦁',price:820,bonus:'+6% puntuación'},
+{id:'penguin',name:'Pingüino',icon:'🐧',price:540,bonus:'+5% duración de hielo'},
+{id:'octopus',name:'Pulpo',icon:'🐙',price:680,bonus:'+5% imán'},
+{id:'dolphin',name:'Delfín',icon:'🐬',price:700,bonus:'+5% combo'},
+{id:'bat',name:'Murciélago',icon:'🦇',price:640,bonus:'+4% XP'},
+{id:'ghost',name:'Fantasma',icon:'👻',price:780,bonus:'Una esquiva extra'},
+{id:'golem',name:'Gólem',icon:'🗿',price:850,bonus:'Escudo reforzado'},
+{id:'fairy',name:'Hada',icon:'🧚',price:900,bonus:'+8% XP'},
+{id:'raccoon',name:'Mapache',icon:'🦝',price:620,bonus:'+4% monedas'},
+{id:'koala',name:'Koala',icon:'🐨',price:580,bonus:'+3% puntuación'},
+{id:'eagle',name:'Águila',icon:'🦅',price:760,bonus:'+5% velocidad'},
+{id:'axolotl',name:'Ajolote',icon:'🦎',price:690,bonus:'+6% duración de poderes'}
 ];
 const achievements=[
 {id:'first',name:'Primer paso',desc:'Juega una partida',reward:50,test:()=>save.totalGames>=1},
@@ -263,10 +287,10 @@ function updateHud(){
 function burst(px,py,col,n=22,p=6){let count=save.lowFx?Math.ceil(n*.4):n;for(let i=0;i<count;i++){let a=rnd(0,7),s=rnd(1,p);particles.push({x:px,y:py,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(24,54),max:54,r:rnd(2,5),col})}}
 function spawnObstacle(){
  let w=selectedWorld(),pool=w.id==='volcano'?['rock','comet','mine']:w.id==='ice'?['crystal','drone','rock']:w.id==='cyber'?['drone','gear','laser','satellite']:['rock','mine','drone','crystal','satellite','comet','gear'];
- let type=pick(pool),r=rnd(19,37)+level*.35;obstacles.push({type,x:rnd(r,W-r),y:-60,r,s:(rnd(2.7,4.2)+level*.18)*(slow?.68:1),rot:rnd(0,7),vr:rnd(-.07,.07),phase:rnd(0,7),bossShot:false})
+ let type=pick(pool),r=rnd(19,37)+level*.4;obstacles.push({type,x:rnd(r,W-r),y:-60,r,s:(rnd(3.0,4.7)+level*.23)*(slow?.68:1),rot:rnd(0,7),vr:rnd(-.07,.07),phase:rnd(0,7),bossShot:false})
 }
 function spawnBoss(){bossIndex++;let names={space:'TITÁN METEORO',volcano:'REY MAGMA',ice:'NÚCLEO GLACIAL',jungle:'GUARDIÁN SALVAJE',cyber:'OMEGA-9',temple:'COLOSO ANTIGUO'};
- boss={name:names[save.world]||'TITÁN',x:W/2,y:125,r:53,max:10+bossIndex*5,hp:10+bossIndex*5,phase:0,shot:0};toast('JEFE '+bossIndex);vibrate(100)
+ boss={name:names[save.world]||'TITÁN',x:W/2,y:125,r:56,max:14+bossIndex*7,hp:14+bossIndex*7,phase:0,shot:0};toast('JEFE '+bossIndex);vibrate(100)
 }
 function spawnBossShot(){if(!boss)return;let a=Math.atan2(ball.y-boss.y,ball.x-boss.x);obstacles.push({type:'comet',x:boss.x,y:boss.y+20,r:18,s:6,rot:a,vr:0,phase:0,bossShot:true,vx:Math.cos(a)*(2.1+bossIndex*.2),vy:Math.sin(a)*(2.1+bossIndex*.2)})}
 function spawnItem(force){
@@ -288,14 +312,19 @@ function update(dt){
  let pet=selectedPet();let petScore=pet.id==='orb'?1.05:1;score+=dt*.012*mult*combo*petScore;
  if(mode==='timed'||mode==='duel'||mode==='coop'){timeLeft-=dt/1000;if(timeLeft<=0){finish();return}}
  if(mode==='duel')rivalScore+=dt*rnd(.009,.017)*(1+level*.03);if(mode==='coinrace')rivalScore+=dt*rnd(.0014,.0033);if(mode==='coop')allyScore+=dt*rnd(.008,.014);
- let newLevel=1+Math.floor(score/550);if(newLevel>level){level=newLevel;toast('NIVEL '+level);flash=1;if(mode==='survival'&&level%5===0&&!boss)spawnBoss();if(level%4===0)triggerEvent()}
+ let newLevel=1+Math.floor(score/420);if(newLevel>level){level=newLevel;toast('NIVEL '+level);flash=1;if(mode==='survival'&&level%4===0&&!boss)spawnBoss();if(level%3===0)triggerEvent()}
  if(comboT>0&&(comboT-=dt)<=0)combo=1;if(multT>0&&(multT-=dt)<=0)mult=1;if(shield>0)shield-=dt;if(magnet>0)magnet-=dt;if(golden>0)golden-=dt;if(slow>0)slow-=dt;
  if(eventT>0&&(eventT-=dt)<=0)eventName='';
  spawnO-=dt;spawnI-=dt;spawnP-=dt;
- if(spawnO<=0&&!boss){spawnObstacle();spawnO=Math.max(250,rnd(500,820)-level*19)}
+ if(spawnO<=0&&!boss){
+ spawnObstacle();
+ if(level>=8&&Math.random()<.28)spawnObstacle();
+ if(level>=18&&Math.random()<.18)spawnObstacle();
+ spawnO=Math.max(170,rnd(430,700)-level*22)
+}
  if(spawnI<=0){spawnItem();if(Math.random()<.31)spawnItem();spawnI=rnd(390,720)}
  if(spawnP<=0){spawnItem();spawnP=rnd(5200,7800)}
- if(boss){boss.phase+=dt*.002;boss.x=W/2+Math.sin(boss.phase)*Math.min(W*.3,135);boss.shot-=dt;if(boss.shot<=0){spawnBossShot();boss.shot=Math.max(500,1080-bossIndex*70)}}
+ if(boss){boss.phase+=dt*.002;boss.x=W/2+Math.sin(boss.phase)*Math.min(W*.3,135);boss.shot-=dt;if(boss.shot<=0){spawnBossShot();boss.shot=Math.max(360,900-bossIndex*75)}}
  let ease=Math.min(.42,save.sensitivity/100);ball.x+=(ball.tx-ball.x)*ease;ball.y+=(ball.ty-ball.y)*ease;ball.x=Math.max(ball.r,Math.min(W-ball.r,ball.x));ball.y=Math.max(100,Math.min(H-ball.r-10,ball.y));
  ball.trail.push({x:ball.x,y:ball.y});if(ball.trail.length>14)ball.trail.shift();
  for(const o of obstacles){if(o.bossShot){o.x+=o.vx;o.y+=o.vy}else{o.y+=o.s;o.rot+=o.vr;o.phase+=dt*.005;if(o.type==='drone')o.x+=Math.sin(o.phase)*1.8;if(o.type==='laser')o.x+=Math.sin(o.phase)*2.5}}
@@ -445,7 +474,7 @@ function moveBallFromPointer(e){
  touchGuide.y=e.clientY;
  touchGuide.active=true;
  ball.tx=px;
- ball.ty=Math.max(100,py-38);
+ ball.ty=Math.max(100,py-58);
 }
 c.addEventListener('pointerdown',e=>{
  if(state!=='play'||paused)return;
