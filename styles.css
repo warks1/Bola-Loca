@@ -49,3 +49,9 @@ h1{font-size:40px;line-height:.95;margin:5px 0 8px;font-weight:1000}.sub{color:v
 .eventBanner.show{opacity:1;transform:translateX(-50%) scale(1)}
 .rareFlash{animation:rareFlash .45s ease 2}
 @keyframes rareFlash{50%{filter:brightness(1.8);box-shadow:0 0 70px #fff}}
+
+.itemCard{position:relative;min-height:132px;overflow:hidden;background:linear-gradient(155deg,#1b2443,#11162b)}
+.itemCard::after{content:"";position:absolute;inset:auto -30% -45% -30%;height:70%;background:radial-gradient(circle,#32e9ff1f,transparent 68%);pointer-events:none}
+.itemCard .priceTag{display:block;margin:7px auto 0;width:max-content;padding:5px 9px;border-radius:999px;background:linear-gradient(90deg,#ffbd16,#ff7040);box-shadow:0 4px 14px #ff850044;color:#fff;font-size:10px;font-weight:1000}
+.itemCard .ownedTag{display:block;margin:5px auto 0;width:max-content;padding:4px 8px;border-radius:999px;background:#32e9ff22;border:1px solid #32e9ff55;color:#8cf5ff;font-size:10px}
+.itemIcon{box-shadow:inset 0 0 18px #ffffff16,0 6px 18px #0008}

@@ -1,15 +1,17 @@
-# Crazy Ball Ultimate v13 Infinity
+# Crazy Ball Ultimate v13.1 Ultra Detail
 
-## Novedades
-- Multiplicadores completamente aleatorios: x2, x3, x5, x10, x20, x50, x100, x250, x500 y x1000.
-- Los valores altos son más raros y tienen efectos especiales.
-- Puede aparecer más de un multiplicador a la vez.
-- Director dinámico que adapta la frecuencia de obstáculos.
-- Eventos aleatorios: lluvia de monedas, tormenta de meteoritos, oleada de ventajas, baja gravedad y alerta de jefe.
-- Nuevos obstáculos 3D: sierra, portal, hélice y meteorito.
-- Música dinámica y mundos animados conservados.
-- Control táctil por arrastre, sin botones de dirección.
-- Personajes, mascotas, tienda, pase, misiones, logros, perfil, ranking y ajustes conservados.
+## Correcciones y mejoras
+- Los precios aparecen siempre en personajes, mascotas y mundos, incluso después de comprarlos.
+- La carretera incorpora asfalto por capas, arcenes, bordillos, barreras, línea central, carriles luminosos, reflectantes, farolas y señales.
+- El personaje tiene torso, pecho, cintura, cuello, cabeza, pelo o casco, visor, ojos, boca, hombros, guantes, rodilleras, zapatos, mochila, cinturón y núcleo de energía.
+- Accesorios especiales según la familia del personaje.
+- Mascotas con cabeza, orejas, ojos, patas, nariz, cola y collar.
+- Fondos animados visibles durante toda la partida.
+- Estrellas que acompañan a la cámara.
+- Planetas reciclados alrededor del recorrido.
+- Naves que cruzan el escenario en movimiento.
+- Edificios y estructuras que se mantienen cerca del jugador.
+- Se conservan los multiplicadores aleatorios y todas las ventajas de v13.
 
 ## Importante
 Three.js se carga desde Internet. Abre `index.html` con conexión activa.
